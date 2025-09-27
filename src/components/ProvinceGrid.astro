@@ -1,41 +1,27 @@
 ---
-const { basePath = '/provincie' } = Astro.props as { basePath?: string };
-
 const provinces = [
-  'Drenthe',
-  'Flevoland',
-  'Friesland',
-  'Gelderland',
-  'Groningen',
-  'Limburg',
-  'Noord-Brabant',
-  'Noord-Holland',
-  'Overijssel',
-  'Utrecht',
-  'Zeeland',
-  'Zuid-Holland',
+  'Drenthe','Flevoland','Friesland','Gelderland','Groningen',
+  'Limburg','Noord-Brabant','Noord-Holland','Overijssel',
+  'Utrecht','Zeeland','Zuid-Holland',
 ];
 
-const makeSlug = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
+const slug = (v: string) =>
+  v.toLowerCase().normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 ---
 <section class="mx-auto max-w-6xl px-4">
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-    {provinces.map((province) => {
-      const href = `${basePath}/${makeSlug(province)}`;
+    {provinces.map((p) => {
+      const href = `/dating-${slug(p)}/`;
       return (
         <a
           href={href}
-          aria-label={`Bekijk profielen uit ${province}`}
+          aria-label={`Bekijk profielen uit ${p}`}
           class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm transition hover:border-sky-500 hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
         >
-          <span class="text-lg font-semibold group-hover:text-sky-700">{province}</span>
-          <span class="mt-2 block text-sm text-slate-700 group-hover:text-slate-700">Ontdek matches in {province}</span>
+          <span class="text-lg font-semibold group-hover:text-sky-700">{p}</span>
+          <span class="mt-2 block text-sm text-slate-700">Ontdek matches in {p}</span>
         </a>
       );
     })}
