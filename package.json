@@ -9,8 +9,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "lint": "eslint . --ext .ts,.tsx,.astro",
-    "format": "prettier --write ."
+    "lint": "eslint \"src/**/*.{ts,tsx,astro}\"",
+    "format": "prettier -w ."
   },
   "dependencies": {
     "astro": "^4.0.0",
