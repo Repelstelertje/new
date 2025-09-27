@@ -20,15 +20,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      STAGING: 'true' # staging voor new.*; op productie later 'false'
+      STAGING: 'true' # staging voor new.*
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Geen versie meegeven; pnpm/action-setup leest packageManager uit package.json
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Setup Node
         uses: actions/setup-node@v4
