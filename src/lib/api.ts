@@ -4,6 +4,8 @@ import { canonicalProvince } from "./provinces";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+const FALLBACK_IMG = "/img/fallback.svg";
+
 const BASE = config.api.baseUrl.replace(/\/$/, "");
 const endpointTemplates = config.api.endpoints;
 
@@ -113,9 +115,9 @@ export type Profile = {
 };
 
 function resolveImageSource(raw: z.infer<typeof imageSourceSchema>): Profile["img"] {
-  if (!raw) return { src: "/favicon.svg", alt: "" };
+  if (!raw) return { src: FALLBACK_IMG, alt: "" };
   if (typeof raw === "string") return { src: raw, alt: "" };
-  const src = raw.src ?? raw.url ?? "/favicon.svg";
+  const src = raw.src ?? raw.url ?? FALLBACK_IMG;
   return { src, alt: raw.alt ?? "", srcset: raw.srcset, sizes: raw.sizes };
 }
 
@@ -138,7 +140,7 @@ function resolveImageSourceFromRaw(raw: z.infer<typeof rawProfileSchema>): Profi
     raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img));
 
   if (!imageSource) {
-    throw new Error("Afbeelding ontbreekt in profiel");
+    return { src: FALLBACK_IMG, alt: "" };
   }
 
   // Reuse bestaande resolver voor union-type
@@ -182,6 +184,8 @@ const profileSchema = rawProfileSchema.transform((raw) => {
   const altParts = [raw.name, raw.province].filter(Boolean);
   const alt = altParts.join(", ");
 
+  const finalImg = img?.src ? img : { src: FALLBACK_IMG, alt: "" };
+
   return {
     id: String(raw.id),
     name: raw.name,
@@ -189,7 +193,7 @@ const profileSchema = rawProfileSchema.transform((raw) => {
     province: raw.province ?? "",
     description: raw.description ?? raw.aboutme,
     deeplink: appendUtm(deeplink, raw.province ?? "", raw.id),
-    img: { ...img, alt },
+    img: { ...finalImg, alt },
   } satisfies Profile;
 });
 
