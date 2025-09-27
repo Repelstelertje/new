@@ -1,0 +1,71 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProfileCard from "../../components/ProfileCard.astro";
+import Pagination from "../../components/Pagination.astro";
+import { buildTitle, buildDescription, jsonld } from "../../lib/seo";
+import type { Profile } from "../../lib/api";
+
+interface Props {
+  provinceName: string;
+  slug: string;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  totalCount: number;
+  profiles: Profile[];
+}
+
+const { provinceName, slug, currentPage, totalPages, pageSize, totalCount, profiles } = Astro.props as Props;
+
+const basePath = `/dating-${slug}/`;
+const path = currentPage > 1 ? `${basePath}page/${currentPage}/` : basePath;
+const resolvedTotalPages = Math.max(1, totalPages);
+const resolvedTotalCount = Math.max(totalCount, profiles.length);
+const title = buildTitle("province", { provincie: provinceName });
+const description = buildDescription("province", { provincie: provinceName, count: resolvedTotalCount });
+const listStartIndex = (currentPage - 1) * pageSize;
+
+const itemListElement = profiles.map((profile, index) => {
+  const item: Record<string, unknown> = {
+    "@type": "ListItem",
+    position: listStartIndex + index + 1,
+    url: profile.deeplink,
+    name: profile.name,
+  };
+  if (profile.description) {
+    item.description = profile.description;
+  }
+  return item;
+});
+
+const itemListSchema = jsonld("ItemList", {
+  name: `Profielen in ${provinceName}`,
+  itemListElement,
+});
+---
+<Base
+  title={title}
+  description={description}
+  path={path}
+  staging={import.meta.env.STAGING}
+  jsonLd={[itemListSchema]}
+>
+  <section class="space-y-6">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold text-neutral-900">Profielen in {provinceName}</h1>
+      <p class="text-neutral-700">
+        Bekijk {resolvedTotalCount} profielen uit {provinceName}. Kies je favoriet en start direct een gesprek (18+).
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+      {profiles.length === 0 ? (
+        <p class="col-span-full text-neutral-600">Momenteel zijn er geen profielen beschikbaar in deze provincie.</p>
+      ) : (
+        profiles.map((profile) => <ProfileCard {...profile} />)
+      )}
+    </div>
+
+    <Pagination current={currentPage} total={resolvedTotalPages} basePath={basePath} />
+  </section>
+</Base>
