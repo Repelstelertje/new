@@ -6,6 +6,48 @@ interface ProfileCardImage {
   sizes?: string;
 }
 
+const FALLBACK_WIDTHS = [320, 480, 960];
+
+const ensureResponsiveSrcset = (src: string, provided?: string) => {
+  const entries: string[] = [];
+  const seen = new Set<number>();
+
+  if (provided) {
+    for (const candidate of provided.split(",")) {
+      const value = candidate.trim();
+      if (!value) continue;
+      entries.push(value);
+      const match = value.match(/(\d+)\s*w/i);
+      if (match) {
+        const width = Number.parseInt(match[1] ?? "", 10);
+        if (Number.isFinite(width)) seen.add(width);
+      }
+    }
+  }
+
+  for (const width of FALLBACK_WIDTHS) {
+    if (!seen.has(width)) {
+      entries.push(`${src} ${width}w`);
+    }
+  }
+
+  return entries.join(", ");
+};
+
+const placeholderSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 24'>` +
+  `<defs>` +
+  `<linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
+  `<stop offset='0%' stop-color='#e2e8f0'/>` +
+  `<stop offset='100%' stop-color='#cbd5f5'/>` +
+  `</linearGradient>` +
+  `<filter id='b'><feGaussianBlur stdDeviation='6' /></filter>` +
+  `</defs>` +
+  `<rect width='32' height='24' fill='#e2e8f0'/>` +
+  `<rect width='32' height='24' fill='url(#g)' filter='url(#b)'/>` +
+  `</svg>`;
+
+const blurDataUrl = `data:image/svg+xml,${encodeURIComponent(placeholderSvg)}`;
+
 const {
   id,
   name,
@@ -23,6 +65,10 @@ const {
   deeplink: string;
   description?: string;
 };
+
+const responsiveSrcset = ensureResponsiveSrcset(img.src, img.srcset);
+const responsiveSizes =
+  img.sizes ?? "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw";
 ---
 <article
   class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-sky-500 hover:shadow-lg"
@@ -34,12 +80,15 @@ const {
     rel="nofollow sponsored noopener"
     class="group relative block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
   >
-    <picture class="block aspect-[4/3] overflow-hidden bg-slate-100">
+    <picture
+      class="block aspect-[4/3] overflow-hidden bg-slate-100"
+      style={`background-image: url('${blurDataUrl}'); background-size: cover; background-position: center;`}
+    >
       <img
         src={img.src}
         alt={img.alt}
-        srcset={img.srcset}
-        sizes={img.sizes}
+        srcset={responsiveSrcset}
+        sizes={responsiveSizes}
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
