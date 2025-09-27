@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { config } from "./config";
-import { provinceToSlug, canonicalProvince } from "./provinces";
+import { canonicalProvince } from "./provinces";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -220,16 +220,32 @@ function extractPageCount(data: ProfileResponse): number | undefined {
 }
 
 export function appendUtm(deeplink: string, province: string, id: string | number) {
-  const { base, utm, subidParam } = config.api.deeplink;
-  const slug = provinceToSlug(province);
+  const { base, deeplink: dl } = { base: (config.api.deeplink?.base || '').trim(), deeplink: config.api.deeplink };
+  // vaste affiliate/bron-params (geen UTM, geen subid)
+  const refParam = dl?.extraParams?.refParam ?? 'ref';
+  const refValue = dl?.extraParams?.refValue ?? '32';
+  const sourceParam = dl?.extraParams?.sourceParam ?? 'source';
+  const subsourceParam = dl?.extraParams?.subsourceParam ?? 'subsource';
+
+  // source = sitenaam gesimplificeerd (lowercase, spaties weg, non-alnum weg)
+  const siteSource =
+    config.site?.name
+      ?.toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9-]/g, '') || 'site';
+
   let url: URL;
-  try { url = new URL(deeplink, base); } catch { url = new URL(base); }
-  const repl = (v?: string) => v?.replace("{provincie}", slug).replace("{id}", String(id));
-  const s = repl(utm?.source); const m = repl(utm?.medium); const c = repl(utm?.campaign);
-  if (s) url.searchParams.set("utm_source", s);
-  if (m) url.searchParams.set("utm_medium", m);
-  if (c) url.searchParams.set("utm_campaign", c);
-  if (subidParam) url.searchParams.set(subidParam, String(id));
+  try {
+    url = new URL(deeplink, base || undefined);
+  } catch {
+    url = new URL(base || 'https://example.com/');
+  }
+
+  // Alleen deze 3 params zetten/overschrijven
+  url.searchParams.set(refParam, refValue);
+  url.searchParams.set(sourceParam, siteSource);
+  url.searchParams.set(subsourceParam, String(id));
+
   return url.toString();
 }
 

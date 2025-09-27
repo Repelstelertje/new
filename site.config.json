@@ -29,7 +29,13 @@
     "deeplink": {
       "base": "https://chat.domein.tld/",
       "utm": { "source": "oproepjes", "medium": "referral", "campaign": "provincie-{provincie}" },
-      "subidParam": "subid"
+      "subidParam": "subid",
+      "extraParams": {
+        "refParam": "ref",
+        "refValue": "32",
+        "sourceParam": "source",
+        "subsourceParam": "subsource"
+      }
     }
   },
   "seo": {
