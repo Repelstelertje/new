@@ -1,0 +1,40 @@
+---
+import { PROVINCES, provinceToSlug } from "../../../lib/provinces";
+
+export function getStaticPaths() {
+  return PROVINCES.map((province) => {
+    const slug = provinceToSlug(province);
+    return {
+      params: { provincie: slug },
+      props: {
+        target: `/dating-${slug}/`,
+        provinceName: province,
+      },
+    };
+  });
+}
+
+interface Props {
+  target: string;
+  provinceName: string;
+}
+
+const { target, provinceName } = Astro.props as Props;
+const metaRefresh = `0; url=${target}`;
+---
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Doorsturen naar Dating {provinceName}</title>
+    <meta http-equiv="refresh" content={metaRefresh} />
+    <link rel="canonical" href={target} />
+  </head>
+  <body>
+    <p>
+      Je wordt automatisch doorgestuurd naar <a href={target}>Dating {provinceName}</a>.
+      Als dat niet gebeurt, klik dan op de link.
+    </p>
+  </body>
+</html>
