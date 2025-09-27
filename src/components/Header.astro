@@ -17,17 +17,17 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
   </a>
 
   <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between gap-6">
-    <!-- Logo/titel (18+ badge NIET hier) -->
+    <!-- Klikbare sitenaam (zonder 18+ badge) -->
     <a href="/" aria-label={`${siteName} homepage`} class="flex items-center gap-3 font-semibold">
       <span class="text-xl">{siteName}</span>
     </a>
 
     <!-- Navigatie -->
-    <nav aria-label="Hoofdnavigatie">
+    <nav aria-label="Hoofdnavigatie" class="relative">
       <ul class="flex items-center gap-2">
         <!-- Provincies dropdown -->
         <li class="relative">
-          <details class="group">
+          <details class="group" data-menu>
             <summary
               class="cursor-pointer list-none rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
               aria-haspopup="menu"
@@ -36,9 +36,9 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
             </summary>
             <div
               role="menu"
-              class="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg"
+              class="absolute right-0 z-20 mt-2 w-[min(92vw,38rem)] rounded-xl border border-neutral-200 bg-white p-3 shadow-lg"
             >
-              <ul class="max-h-[60vh] overflow-auto">
+              <ul class="grid grid-cols-2 md:grid-cols-3 gap-1">
                 {provinces.map((name) => {
                   const slug = provinceToSlug(name);
                   return (
@@ -61,14 +61,14 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
 
         <!-- Datingtips dropdown (placeholder-links) -->
         <li class="relative">
-          <details class="group">
+          <details class="group" data-menu>
             <summary
               class="cursor-pointer list-none rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
               aria-haspopup="menu"
             >
               Datingtips
             </summary>
-            <div role="menu" class="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
+            <div role="menu" class="absolute right-0 z-20 mt-2 w-[min(92vw,28rem)] rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
               <ul>
                 <li>
                   <a role="menuitem" href="/tips/veilig-daten/" class="block rounded-md px-3 py-2 text-sm hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
@@ -90,16 +90,16 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
           </details>
         </li>
 
-        <!-- Socials -->
+        <!-- Socials dropdown (alleen iconen) -->
         <li class="relative">
-          <details class="group">
+          <details class="group" data-menu>
             <summary
               class="cursor-pointer list-none rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
               aria-haspopup="menu"
             >
               Socials
             </summary>
-            <div role="menu" class="absolute right-0 z-20 mt-2 min-w-56 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
+            <div role="menu" class="absolute right-0 z-20 mt-2 rounded-xl border border-neutral-200 bg-white p-2 shadow-lg">
               <ul class="flex items-center gap-3 px-2 py-1">
                 <li>
                   <a
@@ -108,10 +108,10 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
                     target="_blank"
                     rel="noopener nofollow"
                     aria-label="Volg ons op Facebook"
-                    class="inline-flex items-center gap-2 rounded-md px-2 py-1 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    class="inline-flex items-center rounded-md p-2 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    title="Facebook"
                   >
-                    <img src="/img/fb.png" width="20" height="20" alt="" />
-                    <span class="text-sm">Facebook</span>
+                    <img src="/img/fb.png" width="22" height="22" alt="" />
                   </a>
                 </li>
                 <li>
@@ -121,10 +121,10 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
                     target="_blank"
                     rel="noopener nofollow"
                     aria-label="Volg ons op Instagram"
-                    class="inline-flex items-center gap-2 rounded-md px-2 py-1 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    class="inline-flex items-center rounded-md p-2 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    title="Instagram"
                   >
-                    <img src="/img/ig.png" width="20" height="20" alt="" />
-                    <span class="text-sm">Instagram</span>
+                    <img src="/img/ig.png" width="22" height="22" alt="" />
                   </a>
                 </li>
               </ul>
@@ -134,4 +134,45 @@ const provinces = [...PROVINCES].sort((a, b) => a.localeCompare(b, "nl"));
       </ul>
     </nav>
   </div>
+
+  <!-- Minimal JS om menu’s netjes te sluiten -->
+  <script is:inline>
+    (function () {
+      const header = document.currentScript.closest('header');
+      if (!header) return;
+
+      // Sluit andere menu’s bij openen van één
+      header.addEventListener('toggle', (e) => {
+        const t = e.target;
+        if (!(t instanceof HTMLDetailsElement) || !t.hasAttribute('data-menu')) return;
+        if (t.open) {
+          header.querySelectorAll('details[data-menu][open]').forEach((d) => {
+            if (d !== t) d.removeAttribute('open');
+          });
+        }
+      });
+
+      // Klik buiten -> sluiten
+      document.addEventListener('pointerdown', (e) => {
+        const openMenus = header.querySelectorAll('details[data-menu][open]');
+        openMenus.forEach((d) => {
+          if (!d.contains(e.target)) d.removeAttribute('open');
+        });
+      });
+
+      // ESC -> sluiten
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        header.querySelectorAll('details[data-menu][open]').forEach((d) => d.removeAttribute('open'));
+      });
+
+      // Na klik op link binnen menu -> sluiten
+      header.addEventListener('click', (e) => {
+        const a = (e.target as HTMLElement).closest('a');
+        if (a && a.closest('details[data-menu]')) {
+          header.querySelectorAll('details[data-menu][open]').forEach((d) => d.removeAttribute('open'));
+        }
+      });
+    })();
+  </script>
 </header>
