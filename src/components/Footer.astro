@@ -1,0 +1,36 @@
+---
+const { links = [], disclaimer } = Astro.props as {
+  links?: Array<{ href: string; label: string; ariaLabel?: string }>;
+  disclaimer?: string;
+};
+---
+<footer class="bg-slate-900 text-slate-100" aria-label="Voettekst">
+  <div class="mx-auto max-w-6xl px-4 py-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <div class="space-y-2 max-w-xl">
+      <p class="text-lg font-semibold">Blijf veilig online</p>
+      <p class="text-sm text-slate-300">
+        {disclaimer ?? 'Gebruik deze dienst verantwoord. Controleer altijd de identiteit van personen waarmee je contact maakt.'}
+      </p>
+    </div>
+    {links.length > 0 && (
+      <nav aria-label="Voettekst links">
+        <ul class="grid grid-cols-1 gap-2 text-sm">
+          {links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-label={link.ariaLabel ?? link.label}
+                class="inline-flex items-center gap-2 rounded-md px-3 py-2 font-medium text-slate-100 transition hover:text-white hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+  </div>
+  <div class="bg-slate-950 text-center text-xs text-slate-400 py-4">
+    &copy; {new Date().getFullYear()} Discrete Connecties. Alle rechten voorbehouden.
+  </div>
+</footer>

@@ -1,0 +1,24 @@
+---
+const { items = [] } = Astro.props as {
+  items?: Array<{ id?: string; question: string; answer: string }>;
+};
+---
+<section class="mx-auto max-w-4xl space-y-4 px-4" aria-label="Veelgestelde vragen">
+  {items.map(({ id, question, answer }, index) => {
+    const itemId = id ?? `faq-${index + 1}`;
+    return (
+      <details
+        id={itemId}
+        class="group rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-sky-500 hover:shadow-sm"
+      >
+        <summary class="flex cursor-pointer items-center justify-between gap-4 text-left text-base font-semibold text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
+          <span>{question}</span>
+          <span aria-hidden="true" class="text-sky-600 transition group-open:rotate-45">+</span>
+        </summary>
+        <div class="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-700">
+          <p>{answer}</p>
+        </div>
+      </details>
+    );
+  })}
+</section>
