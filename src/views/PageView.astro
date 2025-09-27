@@ -26,16 +26,20 @@ const description = buildDescription("province", { provincie: provinceName, coun
 const listStartIndex = (currentPage - 1) * pageSize;
 
 const itemListElement = profiles.map((profile, index) => {
-  const item: Record<string, unknown> = {
+  const listItem: Record<string, unknown> = {
     "@type": "ListItem",
     position: listStartIndex + index + 1,
-    url: profile.deeplink,
-    name: profile.name,
+    item: {
+      "@type": "Thing",
+      name: profile.name,
+    },
   };
+
   if (profile.description) {
-    item.description = profile.description;
+    (listItem.item as Record<string, unknown>).description = profile.description;
   }
-  return item;
+
+  return listItem;
 });
 
 const itemListSchema = jsonld("ItemList", {
