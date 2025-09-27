@@ -102,6 +102,7 @@ const analyticsProps = JSON.stringify({
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        onerror={`this.onerror=null; this.src='${"/img/fallback.svg"}'; this.srcset='';`}
       />
     </picture>
   </a>
