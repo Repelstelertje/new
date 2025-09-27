@@ -24,6 +24,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .   # <-- publiceer de ROOT van de repo (waar index.html staat)
+          path: public   # <-- PUBLIC map publiceren (waar jouw index.html staat)
       - id: deployment
         uses: actions/deploy-pages@v4
