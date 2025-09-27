@@ -1,56 +1,54 @@
-name: Deploy
+name: Deploy static site to Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
     - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-env:
-  STAGING: true
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      STAGING: 'true' # staging voor new.*; op productie later 'false'
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 8
 
-      - name: Retrieve pnpm store path
-        id: pnpm-store
-        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          node-version: 20
+          cache: 'pnpm'
 
-      - name: Install dependencies and build
-        run: pnpm i --frozen-lockfile && pnpm build
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install deps (no frozen lockfile)
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build
+        run: pnpm build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ./dist
 
   deploy:
     needs: build
