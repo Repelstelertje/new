@@ -1,0 +1,67 @@
+{% set pageTitle = title + " — " + site.brand %}
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ pageTitle }}</title>
+  <meta name="description" content="{{ desc }}">
+  <link rel="icon" href="/assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <script type="application/ld+json">{{ jsonld | safe }}</script>
+  <meta property="og:title" content="{{ pageTitle }}">
+  <meta property="og:description" content="{{ desc }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ site.baseUrl }}/">
+</head>
+<body>
+  <a class="skiplink" href="#main">Direct naar inhoud</a>
+  <header role="banner" class="site-header">
+    <nav aria-label="Hoofd" class="container">
+      <a class="brand" href="/">⚡ {{ site.brand }}</a>
+      <ul class="nav">
+        <li><a aria-current="page" href="/">Home</a></li>
+        <li><a href="/#provincies">Provincies</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main id="main" role="main">
+    <section class="hero container">
+      <div class="hero-text">
+        <h1>{{ title }}</h1>
+        <p>{{ desc }}</p>
+      </div>
+    </section>
+    <section class="container">
+      <h2>Populaire profielen</h2>
+      <ul class="grid">
+        {% for p in profiles %}
+        <li class="card">
+          <a class="profile" href="{{ p.profileUrl | safe }}" rel="nofollow noopener" target="_blank">
+            <img loading="lazy" width="240" height="320" src="{{ p.thumb }}" alt="Profiel: {{ p.name }}">
+            <div class="meta"><strong>{{ p.name }}</strong>{% if p.age %} • {{ p.age }}{% endif %}{% if p.city %} • {{ p.city }}{% endif %}</div>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <h2 id="provincies">Zoek per provincie</h2>
+      <ul class="pill-list">
+        {% for name in ['Drenthe','Flevoland','Friesland','Gelderland','Groningen','Limburg','Noord-Brabant','Noord-Holland','Overijssel','Utrecht','Zeeland','Zuid-Holland'] %}
+        <li><a class="pill" href="/provincie/{{ name | lower | replace(' ', '-') }}/">{{ name }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  </main>
+  <footer role="contentinfo" class="site-footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> {{ site.brand }} — <a href="/privacy.html">Privacy</a></p>
+    </div>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{const y=document.getElementById('year');if(y)y.textContent=new Date().getFullYear();});
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "site": {
+    "brand": "ONL Dating",
+    "domain": "new.oproepjesnederland.nl",
+    "baseUrl": "https://new.oproepjesnederland.nl",
+    "itemsPerPage": 120,
+    "twitter": "@onl",
+    "locale": "nl-NL"
+  },
+  "api": {
+    "popular": "https://16hl07csd16.nl/profile/banner2/120",
+    "provincePattern": "https://16hl07csd16.nl/profile/province/nl/{PROVINCE}/{LIMIT}",
+    "timeoutMs": 12000
+  },
+  "mapping": {
+    "id": "id",
+    "name": "name",
+    "age": "age",
+    "province": "province",
+    "city": "city",
+    "thumb": "photo",
+    "profileUrl": "url"
+  },
+  "provinces": [
+    "Drenthe",
+    "Flevoland",
+    "Friesland",
+    "Gelderland",
+    "Groningen",
+    "Limburg",
+    "Noord-Brabant",
+    "Noord-Holland",
+    "Overijssel",
+    "Utrecht",
+    "Zeeland",
+    "Zuid-Holland"
+  ]
+}
