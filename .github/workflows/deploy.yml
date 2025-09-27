@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Geen versie meegeven; pnpm/action-setup leest packageManager uit package.json
+      # Gebruik pnpm uit packageManager in package.json; geen versienummer meegeven
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -33,12 +33,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          # BELANGRIJK: geen cache hier, voorkomt lockfile-error
+          # cache: 'pnpm'  <-- VERWIJDERD
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Install deps (no frozen lockfile)
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
