@@ -1,0 +1,27 @@
+---
+const {
+  href,
+  label = 'Start chat — 18+',
+  variant = 'primary',
+} = Astro.props as {
+  href: string;
+  label?: string;
+  variant?: 'primary' | 'secondary';
+};
+
+const variants = {
+  primary:
+    'bg-sky-600 text-white hover:bg-sky-700 focus-visible:outline-sky-400',
+  secondary:
+    'bg-white text-sky-700 ring-1 ring-sky-600 hover:bg-sky-50 focus-visible:outline-sky-600',
+};
+---
+<a
+  href={href}
+  class={`inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-semibold shadow-lg transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${variants[variant]}`}
+  aria-label={label}
+  rel="nofollow noopener"
+>
+  <span aria-hidden="true" class="text-lg">💬</span>
+  <span>{label}</span>
+</a>

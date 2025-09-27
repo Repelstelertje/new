@@ -1,0 +1,42 @@
+---
+const {
+  title = 'Alleen voor 18 jaar en ouder',
+  message = 'Deze dienst is uitsluitend bedoeld voor volwassenen. Door verder te gaan bevestig je dat je 18 jaar of ouder bent.',
+  continueHref = '#',
+  continueLabel = 'Ik ben 18 jaar of ouder',
+  exitHref = '/',
+  exitLabel = 'Terug naar start',
+} = Astro.props as {
+  title?: string;
+  message?: string;
+  continueHref?: string;
+  continueLabel?: string;
+  exitHref?: string;
+  exitLabel?: string;
+};
+---
+<section class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 px-4 py-10" role="dialog" aria-modal="true" aria-labelledby="alert18-title">
+  <div class="max-w-lg rounded-3xl border border-amber-400 bg-white p-8 text-slate-900 shadow-2xl">
+    <div class="mb-6 flex items-center gap-3">
+      <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-500 text-lg font-bold text-white" aria-hidden="true">18+</span>
+      <h2 id="alert18-title" class="text-2xl font-semibold text-slate-900">{title}</h2>
+    </div>
+    <p class="text-sm text-slate-700">{message}</p>
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <a
+        href={continueHref}
+        aria-label={continueLabel}
+        class="inline-flex flex-1 items-center justify-center rounded-full bg-sky-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+      >
+        {continueLabel}
+      </a>
+      <a
+        href={exitHref}
+        aria-label={exitLabel}
+        class="inline-flex flex-1 items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+      >
+        {exitLabel}
+      </a>
+    </div>
+  </div>
+</section>
