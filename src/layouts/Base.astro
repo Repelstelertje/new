@@ -4,14 +4,22 @@ import tailwindHref from "../styles/tailwind.css?url";
 import { canonical as buildCanonical, robots as buildRobots } from "../lib/seo";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Alert18 from "../components/Alert18.astro";
 
 interface Props {
-  title?: string; description?: string; path?: string; staging?: boolean; jsonLd?: any[];
+  title?: string;
+  description?: string;
+  path?: string;
+  staging?: boolean;
+  jsonLd?: Array<Record<string, unknown>>;
 }
 const { title, description, path, staging = false, jsonLd = [] }: Props = Astro.props;
 const canonical = buildCanonical(path);
 const robotsContent = buildRobots(staging);
-const currentYear = new Date().getFullYear();
+const schemaScripts = jsonLd.map((schemaItem) => JSON.stringify(schemaItem));
+const renderSchemaScript = (schemaString: string) => (
+  <script type="application/ld+json">{schemaString}</script>
+);
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -35,12 +43,17 @@ const navItems = [
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    {schemaScripts.map(renderSchemaScript)}
     <script defer data-domain="oproepjesnederland.nl" src="https://plausible.io/js/script.js"></script>
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
+    <Alert18 />
     <Header title="OproepjesNederland" navItems={navItems} />
-    <main id="main-content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8">
+    <main
+      id="main-content"
+      role="main"
+      class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8"
+    >
       <slot />
     </main>
     <Footer
