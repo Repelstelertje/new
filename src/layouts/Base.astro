@@ -1,0 +1,54 @@
+---
+import fontsHref from "../styles/fonts.css?url";
+import tailwindHref from "../styles/tailwind.css?url";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  robots?: string;
+}
+
+const { title, description, canonical, robots }: Props = Astro.props;
+const robotsContent = robots ?? "index,follow";
+const currentYear = new Date().getFullYear();
+---
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {title && <title>{title}</title>}
+    {description && <meta name="description" content={description} />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta name="robots" content={robotsContent} />
+    <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href={fontsHref} />
+    <link rel="stylesheet" href={tailwindHref} />
+    <slot name="jsonld" />
+  </head>
+  <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
+    <a
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-accent"
+      href="#content"
+    >
+      Sla over naar hoofdinhoud
+    </a>
+    <header class="border-b border-neutral-200 bg-white">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-6">
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-semibold uppercase tracking-wide text-neutral-900">OproepjesNederland</span>
+          <span class="inline-flex items-center rounded-full bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">18+</span>
+        </div>
+      </div>
+    </header>
+    <main id="content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8">
+      <slot />
+    </main>
+    <footer class="border-t border-neutral-200 bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-neutral-600">
+        <slot name="footer">© {currentYear} OproepjesNederland. Alle rechten voorbehouden.</slot>
+      </div>
+    </footer>
+  </body>
+</html>
