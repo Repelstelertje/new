@@ -34,3 +34,23 @@ const { links = [], disclaimer } = Astro.props as {
     &copy; {new Date().getFullYear()} OproepjesNederland. Alle rechten voorbehouden.
   </div>
 </footer>
+<script is:inline>
+  if (typeof window !== "undefined") {
+    window.addEventListener("click", (event) => {
+      const origin = event.target;
+      if (!origin || !(origin instanceof Element)) return;
+      const target = origin.closest('[data-analytics="outbound_click"]');
+      if (!target) return;
+      const raw = target.getAttribute("data-props");
+      if (!raw) return;
+      try {
+        const props = JSON.parse(raw);
+        if (typeof window.plausible === "function") {
+          window.plausible("outbound_click", { props });
+        }
+      } catch (_error) {
+        return;
+      }
+    });
+  }
+</script>

@@ -56,6 +56,7 @@ const {
   img,
   deeplink,
   description,
+  rank,
 } = Astro.props as {
   id: string | number;
   name: string;
@@ -64,11 +65,18 @@ const {
   img: ProfileCardImage;
   deeplink: string;
   description?: string;
+  rank?: number;
 };
 
 const responsiveSrcset = ensureResponsiveSrcset(img.src, img.srcset);
 const responsiveSizes =
   img.sizes ?? "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw";
+const analyticsProps = JSON.stringify({
+  chat_url: deeplink,
+  province,
+  rank,
+  profile_id: String(id),
+});
 ---
 <article
   class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-sky-500 hover:shadow-lg"
@@ -79,6 +87,8 @@ const responsiveSizes =
     aria-label={`Bekijk profiel van ${name}`}
     rel="nofollow sponsored noopener"
     class="group relative block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+    data-analytics="outbound_click"
+    data-props={analyticsProps}
   >
     <picture
       class="block aspect-[4/3] overflow-hidden bg-slate-100"
@@ -107,6 +117,8 @@ const responsiveSizes =
         aria-label={`Start gesprek met ${name}`}
         rel="nofollow sponsored noopener"
         class="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+        data-analytics="outbound_click"
+        data-props={analyticsProps}
       >
         Profiel bekijken
       </a>
