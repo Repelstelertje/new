@@ -72,21 +72,35 @@ const imageSourceSchema = z
   ])
   .optional();
 
-const rawProfileSchema = z.object({
-  id: z.union([z.string(), z.number()]),
-  name: z.string().optional(),
-  age: z.union([z.number(), z.string()]).optional(),
-  province: z.string().optional(),
-  description: z.string().optional(),
-  deeplink: z.string().optional(),
-  url: z.string().optional(),
-  link: z.string().optional(),
-  image: imageSourceSchema,
-  avatar: imageSourceSchema,
-  picture: imageSourceSchema,
-  images: z.array(imageSourceSchema).optional(),
-  img: imageSourceSchema,
-}).passthrough();
+const rawProfileSchema = z
+  .object({
+    id: z.union([z.string(), z.number()]),
+    name: z.string(),
+    age: z.union([z.number(), z.string()]),
+    province: z.string().optional().default(""),
+    city: z.string().optional(),
+    description: z.string().optional(),
+    aboutme: z.string().optional(),
+    deeplink: z.string().optional(),
+    url: z.string().optional(),
+    link: z.string().optional(),
+    // image gerelateerde velden
+    src: z.string().optional(),
+    picture_url: z.string().optional(),
+    basename: z.string().optional(),
+    image: imageSourceSchema,
+    avatar: imageSourceSchema,
+    picture: imageSourceSchema,
+    images: z.array(imageSourceSchema).optional(),
+    img: imageSourceSchema,
+  })
+  .passthrough();
+
+// Helper om base + filename te joinen met exact één slash
+function joinUrl(base?: string, file?: string) {
+  if (!base || !file) return undefined;
+  return `${base.replace(/\/+$/, "")}/${file.replace(/^\/+/, "")}`;
+}
 
 export type Profile = {
   id: string;
@@ -103,6 +117,32 @@ function resolveImageSource(raw: z.infer<typeof imageSourceSchema>): Profile["im
   if (typeof raw === "string") return { src: raw, alt: "" };
   const src = raw.src ?? raw.url ?? "/favicon.svg";
   return { src, alt: raw.alt ?? "", srcset: raw.srcset, sizes: raw.sizes };
+}
+
+function resolveImageSourceFromRaw(raw: z.infer<typeof rawProfileSchema>): Profile["img"] {
+  // 1) Volledige URL in top-level `src`
+  if (typeof raw.src === "string" && raw.src.length > 0) {
+    return { src: raw.src, alt: "" };
+  }
+  // 2) picture_url + basename
+  const joined = joinUrl(raw.picture_url, raw.basename);
+  if (joined) {
+    return { src: joined, alt: "" };
+  }
+  // 3) oude velden (image/avatar/picture/img/images)
+  const imageSource =
+    raw.image ??
+    raw.avatar ??
+    raw.picture ??
+    raw.img ??
+    raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img));
+
+  if (!imageSource) {
+    throw new Error("Afbeelding ontbreekt in profiel");
+  }
+
+  // Reuse bestaande resolver voor union-type
+  return resolveImageSource(imageSource);
 }
 
 function coerceNumber(n: unknown): number | undefined {
@@ -126,6 +166,32 @@ const responseObjectSchema = z.object({
   pages: z.union([z.number(), z.string()]).optional(),
   pageCount: z.union([z.number(), z.string()]).optional(),
 }).passthrough();
+
+const profileSchema = rawProfileSchema.transform((raw) => {
+  const age = typeof raw.age === "string" ? Number.parseInt(raw.age, 10) : raw.age;
+  if (!Number.isFinite(age)) {
+    throw new Error("Leeftijd is ongeldig");
+  }
+
+  const deeplink = raw.deeplink ?? raw.url ?? raw.link ?? config.api.deeplink.base;
+
+  // Gebruik nieuwe resolver (src / picture_url+basename / fallback)
+  const img = resolveImageSourceFromRaw(raw);
+
+  // Alt-tekst altijd betekenisvol maken
+  const altParts = [raw.name, raw.province].filter(Boolean);
+  const alt = altParts.join(", ");
+
+  return {
+    id: String(raw.id),
+    name: raw.name,
+    age,
+    province: raw.province ?? "",
+    description: raw.description ?? raw.aboutme,
+    deeplink: appendUtm(deeplink, raw.province ?? "", raw.id),
+    img: { ...img, alt },
+  } satisfies Profile;
+});
 
 const profileResponseSchema = z.union([z.array(z.unknown()), responseObjectSchema]);
 
@@ -305,14 +371,7 @@ export async function getProvince(province: string, pageSize: number, page: numb
 
 // normalise 1 profiel
 function toProfile(raw: z.infer<typeof rawProfileSchema>): Profile {
-  const safe = rawProfileSchema.parse(raw);
-  const id = String(safe.id ?? "");
-  const name = (safe as any).name ?? "Anoniem";
-  const age = coerceNumber((safe as any).age) ?? 18;
-  const province = (safe as any).province ?? "";
-  const deeplink = appendUtm(safe.deeplink ?? safe.url ?? safe.link ?? config.api.deeplink.base, province, id);
-  const img = resolveImageSource(safe.image ?? safe.avatar ?? safe.picture ?? safe.img ?? safe.images?.[0]);
-  return { id, name, age, province, description: safe.description, deeplink, img };
+  return profileSchema.parse(raw);
 }
 
 export { BASE };
