@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { config } from "./config";
-import { provinceToSlug } from "./provinces";
+import { provinceToSlug, canonicalProvince } from "./provinces";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -12,11 +12,11 @@ export const endpoints = {
   popular: (limit: number) =>
     `${BASE}${endpointTemplates.popular.replace("{limit}", encodeURIComponent(String(limit)))}`,
   province: (province: string, limit: number, page: number) => {
-    const slug = provinceToSlug(province);
+    // API wil exacte casing zoals "Drenthe", "Noord-Holland"
+    const canonical = canonicalProvince(province);
     const path = endpointTemplates.province
-      .replace("{provincie}", encodeURIComponent(slug))
+      .replace("{provincie}", encodeURIComponent(canonical))
       .replace("{limit}", encodeURIComponent(String(limit)));
-    // Sommige APIs ondersteunen ?page, andere niet; alleen toevoegen >1
     const url = new URL(`${BASE}${path}`);
     if (page > 1) url.searchParams.set("page", String(page));
     return url.toString();
