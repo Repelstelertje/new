@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pagina niet gevonden | OproepjesNederland</title>
-    <meta name="description" content="De opgevraagde pagina bestaat niet. Keer terug naar OproepjesNederland en start opnieuw een chat." />
+    <meta
+      name="description"
+      content="De opgevraagde pagina bestaat niet. Ga terug naar de homepage of kies direct een provincie om onze datingoproepen te bekijken."
+    />
     <style>
       :root {
         color-scheme: light;
@@ -21,7 +24,7 @@
         padding: 2rem;
       }
       .card {
-        max-width: 640px;
+        max-width: 760px;
         width: 100%;
         background: #ffffff;
         border-radius: 1.5rem;
@@ -29,8 +32,7 @@
         padding: 3rem;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-        text-align: center;
+        gap: 1.75rem;
       }
       .card h1 {
         font-size: clamp(2rem, 4vw, 2.5rem);
@@ -44,7 +46,7 @@
       }
       .cta {
         display: inline-flex;
-        align-self: center;
+        align-self: flex-start;
         align-items: center;
         justify-content: center;
         background: #ef4444;
@@ -60,32 +62,67 @@
         transform: translateY(-1px);
         box-shadow: 0 12px 30px rgba(239, 68, 68, 0.35);
       }
-      .links {
+      .link-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.75rem;
+      }
+      .link-grid a {
+        display: block;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.75rem;
+        background: #f3f4f6;
+        color: #1f2937;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.2s ease, transform 0.2s ease;
+      }
+      .link-grid a:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+      }
+      .footer-links {
         display: flex;
-        justify-content: center;
         flex-wrap: wrap;
         gap: 1rem;
         font-size: 0.875rem;
       }
-      .links a {
+      .footer-links a {
         color: #4b5563;
         text-decoration: none;
       }
-      .links a:hover {
+      .footer-links a:hover {
         color: #1f2937;
       }
     </style>
   </head>
   <body>
     <main class="card">
-      <h1>Oeps, deze pagina bestaat niet</h1>
+      <h1>Oeps, deze pagina is niet gevonden</h1>
       <p>
-        De link die je probeerde te openen is verplaatst of verwijderd. Ga terug naar de homepage en ontdek onze laatste
-        datingoproepen per provincie.
+        Het lijkt erop dat de link die je hebt gevolgd niet (meer) bestaat. Ga terug naar onze homepage of kies direct een
+        provincie om lokale chats te ontdekken.
       </p>
-      <a class="cta" href="/dating-nederland/">Start chat — 18+</a>
-      <div class="links">
-        <a href="/">Home</a>
+      <a class="cta" href="/">Terug naar home</a>
+      <section>
+        <h2 style="font-size: 1.125rem; margin: 0 0 0.5rem 0;">Kies je provincie</h2>
+        <div class="link-grid">
+          <a href="/dating-drenthe/">Dating Drenthe</a>
+          <a href="/dating-flevoland/">Dating Flevoland</a>
+          <a href="/dating-friesland/">Dating Friesland</a>
+          <a href="/dating-gelderland/">Dating Gelderland</a>
+          <a href="/dating-groningen/">Dating Groningen</a>
+          <a href="/dating-limburg/">Dating Limburg</a>
+          <a href="/dating-noord-brabant/">Dating Noord-Brabant</a>
+          <a href="/dating-noord-holland/">Dating Noord-Holland</a>
+          <a href="/dating-overijssel/">Dating Overijssel</a>
+          <a href="/dating-utrecht/">Dating Utrecht</a>
+          <a href="/dating-zeeland/">Dating Zeeland</a>
+          <a href="/dating-zuid-holland/">Dating Zuid-Holland</a>
+        </div>
+      </section>
+      <div class="footer-links">
+        <a href="/dating-nederland/">Dating Nederland</a>
         <a href="/privacy/">Privacy</a>
         <a href="/cookies/">Cookies</a>
         <a href="/voorwaarden/">Voorwaarden</a>
