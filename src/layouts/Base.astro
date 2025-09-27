@@ -2,8 +2,6 @@
 import fontsHref from "../styles/fonts.css?url";
 import tailwindHref from "../styles/tailwind.css?url";
 import { canonical as buildCanonical, robots as buildRobots } from "../lib/seo";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
 import Alert18 from "../components/Alert18.astro";
 
 interface Props {
@@ -11,24 +9,13 @@ interface Props {
   description?: string;
   path?: string;
   staging?: boolean;
-  jsonLd?: Array<Record<string, unknown>>;
+  jsonLd?: any[];
 }
+
 const { title, description, path, staging = false, jsonLd = [] }: Props = Astro.props;
 const canonical = buildCanonical(path);
 const robotsContent = buildRobots(staging);
-const schemaScripts = jsonLd.map((schemaItem) => JSON.stringify(schemaItem));
-const renderSchemaScript = (schemaString: string) => (
-  <script type="application/ld+json">{schemaString}</script>
-);
-
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/dating-nederland/", label: "Overzicht NL" },
-  { href: "/privacy/", label: "Privacy" },
-  { href: "/cookies/", label: "Cookies" },
-  { href: "/voorwaarden/", label: "Voorwaarden" },
-  { href: "/partners/", label: "Partners" },
-];
+const currentYear = new Date().getFullYear();
 ---
 <!DOCTYPE html>
 <html lang="nl">
@@ -39,26 +26,122 @@ const navItems = [
     {description && <meta name="description" content={description} />}
     {canonical && <link rel="canonical" href={canonical} />}
     <meta name="robots" content={robotsContent} />
-    <link rel="preconnect" href="https://16hl07csd16.nl" crossorigin />
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    {schemaScripts.map(renderSchemaScript)}
-    <script defer data-domain="oproepjesnederland.nl" src="https://plausible.io/js/script.js"></script>
+    {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
-    <Alert18 />
-    <Header title="OproepjesNederland" navItems={navItems} />
-    <main
-      id="main-content"
-      role="main"
-      class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8"
+    <a
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-accent"
+      href="#content"
     >
+      Sla over naar hoofdinhoud
+    </a>
+
+    <header class="border-b border-neutral-200 bg-white" id="site-header">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-6">
+        <div class="flex items-center gap-3">
+          <span class="text-lg font-semibold uppercase tracking-wide text-neutral-900">OproepjesNederland</span>
+          <span class="inline-flex items-center rounded-full bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">18+</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8" aria-live="polite">
       <slot />
     </main>
-    <Footer
-      links={navItems}
-      disclaimer="Gebruik deze dienst verantwoord. 18+."
-    />
+
+    <footer class="border-t border-neutral-200 bg-white" id="site-footer">
+      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-neutral-600">
+        <slot name="footer">© {currentYear} OproepjesNederland. Alle rechten voorbehouden.</slot>
+      </div>
+    </footer>
+
+    {/* 18+ interstitial container (hidden until JS toont hem) */}
+    <div id="age-gate" hidden>
+      <Alert18
+        continueHref="#"
+        exitHref="/"
+        continueLabel="Ik ben 18 jaar of ouder"
+        exitLabel="Verlaat"
+        continueId="age-continue"
+        exitId="age-exit"
+      />
+    </div>
+
+    <!-- Inline JS (geen TS!) voor 18+ gate + minimale focus-trap -->
+    <script>
+      (function () {
+        try {
+          var storage = window.localStorage;
+          var ok = storage.getItem('age_ok') === '1';
+          var gate = document.getElementById('age-gate');
+          var header = document.getElementById('site-header');
+          var footer = document.getElementById('site-footer');
+          var main = document.getElementById('content');
+
+          if (!gate) return;
+
+          function showGate() {
+            gate.hidden = false;
+            // a11y: andere landmarks verborgen voor screenreaders
+            if (header) header.setAttribute('aria-hidden', 'true');
+            if (main) main.setAttribute('aria-hidden', 'true');
+            if (footer) footer.setAttribute('aria-hidden', 'true');
+            // focus-trap
+            var focusables = gate.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+            if (focusables.length) focusables[0].focus();
+
+            function onKeyDown(e) {
+              if (e.key === 'Tab') {
+                var list = Array.prototype.slice.call(focusables);
+                var first = list[0];
+                var last = list[list.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                  e.preventDefault(); last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                  e.preventDefault(); first.focus();
+                }
+              }
+              if (e.key === 'Escape') {
+                // Esc = terug naar start
+                window.location.href = '/';
+              }
+            }
+            gate.addEventListener('keydown', onKeyDown);
+          }
+
+          function hideGate() {
+            gate.hidden = true;
+            if (header) header.removeAttribute('aria-hidden');
+            if (main) main.removeAttribute('aria-hidden');
+            if (footer) footer.removeAttribute('aria-hidden');
+          }
+
+          if (!ok) {
+            showGate();
+            var btnOk = document.getElementById('age-continue');
+            var btnExit = document.getElementById('age-exit');
+
+            if (btnOk) {
+              btnOk.addEventListener('click', function (e) {
+                e.preventDefault();
+                try { storage.setItem('age_ok', '1'); } catch (_) {}
+                hideGate();
+              });
+            }
+            if (btnExit) {
+              btnExit.addEventListener('click', function (e) {
+                e.preventDefault();
+                window.location.href = '/';
+              });
+            }
+          }
+        } catch (_) {
+          // Bij storingsgevallen: geen block, laat site door
+        }
+      })();
+    </script>
   </body>
 </html>
