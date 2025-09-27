@@ -1,0 +1,65 @@
+---
+import PageView from "../../PageView.astro";
+import { config } from "../../../lib/config";
+import { getProvince } from "../../../lib/api";
+import { PROVINCES, provinceToSlug } from "../../../lib/provinces";
+
+const pageSize = config.api.limits?.pageSize ?? 60;
+
+export async function getStaticPaths() {
+  const paths = [] as Array<{
+    params: { provincie: string; page: string };
+    props: {
+      provinceName: string;
+      slug: string;
+      currentPage: number;
+      totalPages: number;
+    };
+  }>;
+
+  for (const provinceName of PROVINCES) {
+    const slug = provinceToSlug(provinceName);
+    const firstPage = await getProvince(provinceName, pageSize, 1);
+    const totalPages = firstPage.totalPages ?? 1;
+
+    if (totalPages <= 1) {
+      continue;
+    }
+
+    for (let page = 2; page <= totalPages; page += 1) {
+      paths.push({
+        params: { provincie: slug, page: String(page) },
+        props: {
+          provinceName,
+          slug,
+          currentPage: page,
+          totalPages,
+        },
+      });
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  provinceName: string;
+  slug: string;
+  currentPage: number;
+  totalPages: number;
+}
+
+const { provinceName, slug, currentPage, totalPages } = Astro.props as Props;
+const data = await getProvince(provinceName, pageSize, currentPage);
+
+const totalCount = data.totalCount ?? data.profiles.length;
+---
+<PageView
+  provinceName={provinceName}
+  slug={slug}
+  currentPage={currentPage}
+  totalPages={totalPages}
+  pageSize={pageSize}
+  totalCount={totalCount}
+  profiles={data.profiles}
+/>
