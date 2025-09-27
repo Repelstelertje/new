@@ -1,16 +1,19 @@
 ---
 import fontsHref from "../styles/fonts.css?url";
 import tailwindHref from "../styles/tailwind.css?url";
+import { canonical as buildCanonical, robots as buildRobots } from "../lib/seo";
 
 interface Props {
   title?: string;
   description?: string;
-  canonical?: string;
-  robots?: string;
+  path?: string;
+  staging?: boolean;
+  jsonLd?: any[];
 }
 
-const { title, description, canonical, robots }: Props = Astro.props;
-const robotsContent = robots ?? "index,follow";
+const { title, description, path, staging = false, jsonLd = [] }: Props = Astro.props;
+const canonical = buildCanonical(path);
+const robotsContent = buildRobots(staging);
 const currentYear = new Date().getFullYear();
 ---
 <!DOCTYPE html>
@@ -25,7 +28,11 @@ const currentYear = new Date().getFullYear();
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    <slot name="jsonld" />
+    {jsonLd.map((schema, index) => (
+      <script key={index} type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    ))}
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
