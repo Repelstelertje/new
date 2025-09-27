@@ -1,5 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
+import ProfileCard from "../components/ProfileCard.astro";
+import { getPopular, type Profile } from "../lib/api";
 import { buildTitle, buildDescription } from "../lib/seo";
 
 const stagingEnv = import.meta.env.STAGING;
@@ -7,6 +9,14 @@ const staging = stagingEnv === true || stagingEnv === "true";
 
 const title = buildTitle("home");
 const description = buildDescription("home");
+
+let popularProfiles: Profile[] = [];
+
+try {
+  popularProfiles = await getPopular(12);
+} catch (error) {
+  console.error("[home] Fout bij ophalen populaire profielen", error);
+}
 ---
 <Base title={title} description={description} path="/" staging={staging}>
   <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
@@ -50,7 +60,30 @@ const description = buildDescription("home");
     </ul>
   </section>
 
-  <section id="popular" class="rounded-2xl border border-dashed border-neutral-200 bg-neutral-100 p-8 text-center text-neutral-400">
-    Populaire profielen verschijnen hier binnenkort.
+  <section id="popular" class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold text-neutral-900">Populaire profielen</h2>
+        <p class="text-neutral-600">Deze leden zijn nu actief en klaar voor een nieuw gesprek.</p>
+      </div>
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full border border-accent px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/10"
+      >
+        Bekijk alle provincies
+      </a>
+    </div>
+
+    {popularProfiles.length > 0 ? (
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {popularProfiles.map((profile) => (
+          <ProfileCard {...profile} key={profile.id} />
+        ))}
+      </div>
+    ) : (
+      <p class="rounded-xl border border-dashed border-neutral-200 bg-neutral-50 p-6 text-center text-neutral-500">
+        Momenteel zijn er geen populaire profielen beschikbaar. Probeer het later opnieuw.
+      </p>
+    )}
   </section>
 </Base>

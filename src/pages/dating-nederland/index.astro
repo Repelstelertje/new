@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import ProvinceGrid from "../../components/ProvinceGrid.astro";
 import { buildTitle, buildDescription } from "../../lib/seo";
 
 const stagingEnv = import.meta.env.STAGING;
@@ -31,24 +32,10 @@ const description = buildDescription("generic", {
   </section>
 
   <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm">
-    <h2 class="text-2xl font-semibold text-neutral-900">Provincies (binnenkort live)</h2>
+    <h2 class="text-2xl font-semibold text-neutral-900">Kies je provincie</h2>
     <p class="text-neutral-600">
-      Binnenkort tonen we hier een interactief overzicht van alle Nederlandse provincies met doorverwijzingen naar de
-      populairste profielen. We zorgen ervoor dat je snel de juiste match vindt.
+      Klik door naar jouw regio en start direct een chat met echte volwassen singles uit de provincie.
     </p>
-    <div class="grid gap-3 text-neutral-500 sm:grid-cols-2 lg:grid-cols-3">
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Drenthe</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Flevoland</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Friesland</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Gelderland</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Groningen</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Limburg</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Noord-Brabant</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Noord-Holland</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Overijssel</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Utrecht</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Zeeland</span>
-      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Zuid-Holland</span>
-    </div>
+    <ProvinceGrid />
   </section>
 </Base>
