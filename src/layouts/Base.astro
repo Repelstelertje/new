@@ -4,6 +4,7 @@ import tailwindHref from "../styles/tailwind.css?url";
 import { canonical as buildCanonical, robots as buildRobots, buildOpenGraph } from "../lib/seo";
 import Alert18 from "../components/Alert18.astro";
 import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 
 interface Props {
   title?: string;
@@ -30,7 +31,6 @@ const ogData = buildOpenGraph({
   ...(og ?? {}),
   url: og?.url ?? canonical,
 });
-const currentYear = new Date().getFullYear();
 ---
 <!DOCTYPE html>
 <html lang="nl">
@@ -92,15 +92,12 @@ const currentYear = new Date().getFullYear();
 
     <Header siteName="OproepjesNederland" />
 
-    <main id="main-content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8" aria-live="polite">
+    <main id="main-content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8">
       <slot />
     </main>
 
-    <footer class="border-t border-neutral-200 bg-white" id="site-footer">
-      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-neutral-600">
-        <slot name="footer">© {currentYear} OproepjesNederland. Alle rechten voorbehouden.</slot>
-      </div>
-    </footer>
+    {/* Vervangde footer */}
+    <Footer />
 
     {/* 18+ interstitial container (hidden until JS toont hem) */}
     <div id="age-gate" hidden>
