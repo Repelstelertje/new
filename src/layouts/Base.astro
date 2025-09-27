@@ -1,7 +1,7 @@
 ---
 import fontsHref from "../styles/fonts.css?url";
 import tailwindHref from "../styles/tailwind.css?url";
-import { canonical as buildCanonical, robots as buildRobots } from "../lib/seo";
+import { canonical as buildCanonical, robots as buildRobots, buildOpenGraph } from "../lib/seo";
 import Alert18 from "../components/Alert18.astro";
 
 interface Props {
@@ -10,11 +10,25 @@ interface Props {
   path?: string;
   staging?: boolean;
   jsonLd?: any[];
+  og?: {
+    title?: string;
+    description?: string;
+    image?: string;
+    type?: "website" | "article";
+    url?: string;
+  };
 }
 
-const { title, description, path, staging = false, jsonLd = [] }: Props = Astro.props;
+const { title, description, path, staging = false, jsonLd = [], og } = Astro.props as Props;
 const canonical = buildCanonical(path);
 const robotsContent = buildRobots(staging);
+// OG defaults uit helpers; vul url met canonical als niet gezet
+const ogData = buildOpenGraph({
+  title,
+  description,
+  ...(og ?? {}),
+  url: og?.url ?? canonical,
+});
 const currentYear = new Date().getFullYear();
 ---
 <!DOCTYPE html>
@@ -26,6 +40,42 @@ const currentYear = new Date().getFullYear();
     {description && <meta name="description" content={description} />}
     {canonical && <link rel="canonical" href={canonical} />}
     <meta name="robots" content={robotsContent} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogData.type} />
+    {ogData.siteName && <meta property="og:site_name" content={ogData.siteName} />}
+    {ogData.title && <meta property="og:title" content={ogData.title} />}
+    {ogData.description && <meta property="og:description" content={ogData.description} />}
+    {ogData.url && <meta property="og:url" content={ogData.url} />}
+    {ogData.image && (
+      <meta
+        property="og:image"
+        content={
+          ogData.image.startsWith("http")
+            ? ogData.image
+            : canonical
+            ? new URL(ogData.image, canonical).toString()
+            : ogData.image
+        }
+      />
+    )}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content={ogData.twitterCard} />
+    {ogData.title && <meta name="twitter:title" content={ogData.title} />}
+    {ogData.description && <meta name="twitter:description" content={ogData.description} />}
+    {ogData.image && (
+      <meta
+        name="twitter:image"
+        content={
+          ogData.image.startsWith("http")
+            ? ogData.image
+            : canonical
+            ? new URL(ogData.image, canonical).toString()
+            : ogData.image
+        }
+      />
+    )}
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
