@@ -4,9 +4,8 @@ import { config } from "../../../../lib/config";
 import { getProvince } from "../../../../lib/api";
 import { PROVINCES, provinceToSlug } from "../../../../lib/provinces";
 
-const pageSize = config.api.limits?.pageSize ?? 60;
-
 export async function getStaticPaths() {
+  const pageSize = config.api.limits?.pageSize ?? 60;
   const paths = [] as Array<{
     params: { provincie: string; page: string };
     props: {
@@ -50,6 +49,7 @@ interface Props {
 }
 
 const { provinceName, slug, currentPage, totalPages } = Astro.props as Props;
+const pageSize = config.api.limits?.pageSize ?? 60;
 const data = await getProvince(provinceName, pageSize, currentPage);
 
 const totalCount = data.totalCount ?? data.profiles.length;
