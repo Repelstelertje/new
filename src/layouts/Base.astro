@@ -28,11 +28,7 @@ const currentYear = new Date().getFullYear();
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    {jsonLd.map((schema, index) => (
-      <script key={index} type="application/ld+json">
-        {JSON.stringify(schema)}
-      </script>
-    ))}
+    {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
