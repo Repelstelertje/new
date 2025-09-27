@@ -37,6 +37,11 @@ async function fetchText(url: string, timeoutMs = config.api.limits?.timeoutMs ?
   }
 }
 
+async function fetchJson<T>(url: string): Promise<T> {
+  const text = await fetchText(url);
+  return JSON.parse(text) as T;
+}
+
 // Schrijf naar public/_debug én dist/_debug
 function debugDump(provinceSlug: string, page: number, body: string) {
   const files = [
@@ -122,6 +127,14 @@ const responseObjectSchema = z.object({
   pageCount: z.union([z.number(), z.string()]).optional(),
 }).passthrough();
 
+const profileResponseSchema = z.union([z.array(z.unknown()), responseObjectSchema]);
+
+type ProfileResponse = z.infer<typeof profileResponseSchema>;
+
+function isProfileResponseObject(value: ProfileResponse): value is z.infer<typeof responseObjectSchema> {
+  return !Array.isArray(value);
+}
+
 function extractProfilesFlexible(json: unknown): z.infer<typeof rawProfileSchema>[] {
   // 1) kale array
   if (Array.isArray(json)) return json as any[];
@@ -167,6 +180,45 @@ function extractTotalsFlexible(json: unknown, pageSize: number) {
   return { totalCount, totalPages };
 }
 
+function extractProfiles(data: ProfileResponse): Profile[] {
+  const rawProfiles = extractProfilesFlexible(data);
+  const profiles: Profile[] = [];
+  for (const raw of rawProfiles) {
+    try {
+      profiles.push(toProfile(raw));
+    } catch (err) {
+      console.warn("[API] Ongeldig profiel overgeslagen", err, raw);
+    }
+  }
+  return profiles;
+}
+
+function extractTotal(data: ProfileResponse): number | undefined {
+  if (Array.isArray(data)) return data.length;
+  if (!isProfileResponseObject(data)) return undefined;
+
+  return (
+    coerceNumber(data.totalCount) ??
+    coerceNumber(data.total) ??
+    coerceNumber(data.count) ??
+    coerceNumber((data.data as any)?.totalCount) ??
+    coerceNumber((data.data as any)?.total) ??
+    coerceNumber((data.data as any)?.count)
+  );
+}
+
+function extractPageCount(data: ProfileResponse): number | undefined {
+  if (Array.isArray(data)) return undefined;
+  if (!isProfileResponseObject(data)) return undefined;
+
+  return (
+    coerceNumber(data.pageCount) ??
+    coerceNumber(data.pages) ??
+    coerceNumber((data.data as any)?.pageCount) ??
+    coerceNumber((data.data as any)?.pages)
+  );
+}
+
 export function appendUtm(deeplink: string, province: string, id: string | number) {
   const { base, utm, subidParam } = config.api.deeplink;
   const slug = provinceToSlug(province);
@@ -191,40 +243,48 @@ export async function getPopular(limit: number) {
 }
 
 export async function getProvince(province: string, pageSize: number, page: number) {
-  const slug = provinceToSlug(province);
-  const url = endpoints.province(province, pageSize, page);
-
-  // 1) altijd raw text ophalen (of foutmelding als tekst)
-  let text: string;
   try {
-    text = await fetchText(url);
-  } catch (err: any) {
-    text = `__FETCH_ERROR__\n${err?.message ?? String(err)}`;
+    const url = endpoints.province(province, pageSize, page);
+    const json = await fetchJson<unknown>(url);
+    const parsed = profileResponseSchema.safeParse(json);
+
+    if (!parsed.success) {
+      console.warn(`[API] Ongeldige response voor provincie=${province} page=${page}`, parsed.error);
+      return {
+        province,
+        page,
+        pageSize,
+        profiles: [],
+        totalCount: 0,
+        totalPages: 1,
+      };
+    }
+
+    const data = parsed.data;
+    const profiles = extractProfiles(data);
+    const totalCount = extractTotal(data) ?? profiles.length ?? 0;
+    const totalPages =
+      extractPageCount(data) ?? (totalCount ? Math.max(1, Math.ceil(totalCount / pageSize)) : 1);
+
+    return {
+      province,
+      page,
+      pageSize,
+      profiles,
+      totalCount,
+      totalPages,
+    };
+  } catch (err) {
+    console.error(`[API] Fout bij ophalen provincie=${province} page=${page}:`, err);
+    return {
+      province,
+      page,
+      pageSize,
+      profiles: [],
+      totalCount: 0,
+      totalPages: 1,
+    };
   }
-
-  // 2) dump raw naar public/_debug én dist/_debug
-  debugDump(slug, page, text);
-
-  // 3) probeer te parsen; als geen JSON -> render leeg maar val niet om
-  let json: unknown;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    json = []; // geen JSON: toon 0 resultaten (maar dump is aanwezig)
-  }
-
-  const raw = extractProfilesFlexible(json);
-  const profiles = raw.map((r: any) => toProfile(r));
-  const totals = extractTotalsFlexible(json, pageSize);
-
-  return {
-    province,
-    page,
-    pageSize,
-    profiles,
-    totalCount: totals.totalCount ?? profiles.length,
-    totalPages: totals.totalPages ?? 1,
-  };
 }
 
 // normalise 1 profiel
