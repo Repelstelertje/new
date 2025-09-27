@@ -37,14 +37,19 @@ async function fetchText(url: string, timeoutMs = config.api.limits?.timeoutMs ?
   }
 }
 
+// Schrijf naar public/_debug én dist/_debug
 function debugDump(provinceSlug: string, page: number, body: string) {
-  try {
-    const dir = join(process.cwd(), "public", "_debug");
-    mkdirSync(dir, { recursive: true });
-    const file = join(dir, `province-${provinceSlug}-p${page}.txt`);
-    writeFileSync(file, body, "utf8");
-  } catch {
-    // zwijgend falen; alleen voor diagnosetool
+  const files = [
+    join(process.cwd(), "public", "_debug", `province-${provinceSlug}-p${page}.txt`),
+    join(process.cwd(), "dist", "_debug", `province-${provinceSlug}-p${page}.txt`),
+  ];
+  for (const file of files) {
+    try {
+      mkdirSync(join(file, ".."), { recursive: true });
+      writeFileSync(file, body, "utf8");
+    } catch {
+      // stil falen; alleen diagnostisch
+    }
   }
 }
 
@@ -189,11 +194,24 @@ export async function getProvince(province: string, pageSize: number, page: numb
   const slug = provinceToSlug(province);
   const url = endpoints.province(province, pageSize, page);
 
-  const text = await fetchText(url);
-  debugDump(slug, page, text); // <<< schrijf naar public/_debug/…
+  // 1) altijd raw text ophalen (of foutmelding als tekst)
+  let text: string;
+  try {
+    text = await fetchText(url);
+  } catch (err: any) {
+    text = `__FETCH_ERROR__\n${err?.message ?? String(err)}`;
+  }
 
+  // 2) dump raw naar public/_debug én dist/_debug
+  debugDump(slug, page, text);
+
+  // 3) probeer te parsen; als geen JSON -> render leeg maar val niet om
   let json: unknown;
-  try { json = JSON.parse(text); } catch { json = []; } // als geen JSON: leeg (maar debug staat op schijf)
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = []; // geen JSON: toon 0 resultaten (maar dump is aanwezig)
+  }
 
   const raw = extractProfilesFlexible(json);
   const profiles = raw.map((r: any) => toProfile(r));
