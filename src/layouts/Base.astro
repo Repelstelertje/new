@@ -3,6 +3,7 @@ import fontsHref from "../styles/fonts.css?url";
 import tailwindHref from "../styles/tailwind.css?url";
 import { canonical as buildCanonical, robots as buildRobots, buildOpenGraph } from "../lib/seo";
 import Alert18 from "../components/Alert18.astro";
+import Header from "../components/Header.astro";
 
 interface Props {
   title?: string;
@@ -84,21 +85,14 @@ const currentYear = new Date().getFullYear();
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
       class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-accent"
-      href="#content"
+      href="#main-content"
     >
       Sla over naar hoofdinhoud
     </a>
 
-    <header class="border-b border-neutral-200 bg-white" id="site-header">
-      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-6">
-        <div class="flex items-center gap-3">
-          <span class="text-lg font-semibold uppercase tracking-wide text-neutral-900">OproepjesNederland</span>
-          <span class="inline-flex items-center rounded-full bg-accent px-2 py-1 text-xs font-bold uppercase tracking-wide text-white">18+</span>
-        </div>
-      </div>
-    </header>
+    <Header siteName="OproepjesNederland" />
 
-    <main id="content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8" aria-live="polite">
+    <main id="main-content" class="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8" aria-live="polite">
       <slot />
     </main>
 
@@ -127,9 +121,9 @@ const currentYear = new Date().getFullYear();
           var storage = window.localStorage;
           var ok = storage.getItem('age_ok') === '1';
           var gate = document.getElementById('age-gate');
-          var header = document.getElementById('site-header');
+          var header = document.querySelector('header[role="banner"]');
           var footer = document.getElementById('site-footer');
-          var main = document.getElementById('content');
+          var main = document.getElementById('main-content');
 
           if (!gate) return;
 
