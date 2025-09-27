@@ -1,101 +1,86 @@
 ---
 import { PROVINCES, provinceToSlug } from "../lib/provinces";
 
-const TIP_LINKS = [
-  { href: "/datingtips/veilig-daten-18-plus/", label: "Veilig daten (18+)" },
-  { href: "/datingtips/het-eerste-bericht/", label: "Het eerste bericht" },
-  { href: "/datingtips/afspreken-dos-and-donts/", label: "Afspreken: do’s & don’ts" },
+const datingTips = [
+  { href: "/datingtips/veilig-daten/", label: "Veilig daten (18+)" },
+  { href: "/datingtips/eerste-bericht/", label: "Het eerste bericht" },
+  { href: "/datingtips/afspreken/", label: "Afspreken: do’s & don’ts" },
+];
+
+const socials = [
+  { href: "https://facebook.com/contactoproepjes", label: "Facebook", icon: "/img/fb.png" },
+  { href: "https://www.instagram.com/oproepjes_nederland", label: "Instagram", icon: "/img/ig.png" },
 ];
 ---
 
-<header class="bg-white border-b border-neutral-200 text-neutral-900 sticky top-0 z-50">
-  <a
-    href="#main-content"
-    class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 bg-white px-3 py-2 rounded-md shadow"
-  >
-    Sla over naar hoofdinhoud
-  </a>
-
-  <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between gap-4">
+<header class="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
     <!-- Brand -->
-    <a href="/" class="inline-flex items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600">
-      <span class="text-xl font-semibold">OproepjesNederland</span>
+    <a href="/" aria-label="Ga naar home" class="flex items-center gap-2">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-600 text-white">18+</span>
+      <span class="text-lg font-semibold tracking-tight text-neutral-900">OproepjesNederland</span>
     </a>
 
     <!-- Nav -->
-    <nav aria-label="Hoofdnavigatie" class="relative">
-      <ul class="flex items-center gap-3">
+    <nav class="relative">
+      <ul class="flex items-center gap-2">
         <!-- Provinces -->
         <li class="relative">
           <button
-            id="btn-provinces"
-            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            data-dropdown="provinces"
             aria-haspopup="true"
             aria-expanded="false"
-            aria-controls="menu-provinces"
-            data-menu-button="provinces"
-            type="button"
           >
-            Provincies
-            <span aria-hidden="true" class="ml-1">▾</span>
+            Provinces ▾
           </button>
-
           <div
-            id="menu-provinces"
+            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
+                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
+            id="dropdown-provinces"
             role="menu"
-            aria-labelledby="btn-provinces"
-            class="invisible opacity-0 pointer-events-none absolute left-0 top-[calc(100%+10px)] w-[46rem] max-w-[90vw] rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl transition-opacity duration-150"
-            data-menu-panel="provinces"
+            aria-label="Provincies"
           >
-            <div class="grid grid-cols-3 gap-2">
-              {PROVINCES.map((name) => {
-                const slug = provinceToSlug(name);
-                const href = `/dating-${slug}/`;
-                return (
+            <ul class="grid grid-cols-1 gap-1">
+              {PROVINCES.map((p) => (
+                <li>
                   <a
+                    href={`/dating-${provinceToSlug(p)}/`}
+                    class="block rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                     role="menuitem"
-                    href={href}
-                    class="block rounded-lg px-3 py-2 text-base font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                    data-close-on-click
                   >
-                    {name}
+                    {p}
                   </a>
-                );
-              })}
-            </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </li>
 
         <!-- Datingtips -->
         <li class="relative">
           <button
-            id="btn-tips"
-            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            data-dropdown="tips"
             aria-haspopup="true"
             aria-expanded="false"
-            aria-controls="menu-tips"
-            data-menu-button="tips"
-            type="button"
           >
-            Datingtips
-            <span aria-hidden="true" class="ml-1">▾</span>
+            Datingtips ▾
           </button>
-
           <div
-            id="menu-tips"
+            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
+                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
+            id="dropdown-tips"
             role="menu"
-            aria-labelledby="btn-tips"
-            class="invisible opacity-0 pointer-events-none absolute left-0 top-[calc(100%+10px)] w-[24rem] max-w-[90vw] rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl transition-opacity duration-150"
-            data-menu-panel="tips"
+            aria-label="Datingtips"
           >
-            <ul class="flex flex-col">
-              {TIP_LINKS.map((t) => (
+            <ul class="grid grid-cols-1 gap-1">
+              {datingTips.map((t) => (
                 <li>
                   <a
-                    role="menuitem"
                     href={t.href}
-                    class="block rounded-lg px-3 py-2 text-base font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                    data-close-on-click
+                    class="block rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    role="menuitem"
                   >
                     {t.label}
                   </a>
@@ -105,120 +90,91 @@ const TIP_LINKS = [
           </div>
         </li>
 
-        <!-- Socials (icons only) -->
+        <!-- Socials -->
         <li class="relative">
           <button
-            id="btn-socials"
-            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            data-dropdown="socials"
             aria-haspopup="true"
             aria-expanded="false"
-            aria-controls="menu-socials"
-            data-menu-button="socials"
-            type="button"
           >
-            Socials
-            <span aria-hidden="true" class="ml-1">▾</span>
+            Socials ▾
           </button>
-
           <div
-            id="menu-socials"
+            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
+                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
+            id="dropdown-socials"
             role="menu"
-            aria-labelledby="btn-socials"
-            class="invisible opacity-0 pointer-events-none absolute right-0 top-[calc(100%+10px)] w-[14rem] max-w-[90vw] rounded-2xl border border-neutral-200 bg-white p-3 shadow-xl transition-opacity duration-150"
-            data-menu-panel="socials"
+            aria-label="Social media"
           >
-            <ul class="flex items-center justify-between gap-3">
-              <li>
-                <a
-                  role="menuitem"
-                  href="https://facebook.com/contactoproepjes"
-                  target="_blank"
-                  rel="noopener nofollow"
-                  class="inline-flex items-center gap-2 rounded-lg p-2 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                  aria-label="Volg ons op Facebook"
-                  data-close-on-click
-                >
-                  <img src="/img/fb.png" alt="" width="28" height="28" class="block" />
-                </a>
-              </li>
-              <li>
-                <a
-                  role="menuitem"
-                  href="https://www.instagram.com/oproepjes_nederland"
-                  target="_blank"
-                  rel="noopener nofollow"
-                  class="inline-flex items-center gap-2 rounded-lg p-2 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
-                  aria-label="Volg ons op Instagram"
-                  data-close-on-click
-                >
-                  <img src="/img/ig.png" alt="" width="28" height="28" class="block" />
-                </a>
-              </li>
+            <ul class="grid grid-cols-1 gap-1">
+              {socials.map((s) => (
+                <li>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener nofollow"
+                    class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                    role="menuitem"
+                    aria-label={s.label}
+                  >
+                    <img src={s.icon} alt="" width="20" height="20" class="h-5 w-5" />
+                    <span>{s.label}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </li>
       </ul>
     </nav>
   </div>
-
-  <!-- Menu control script -->
-  <script>
-    (function () {
-      /** Only one menu open at a time */
-      let open = /** @type {'provinces'|'tips'|'socials'|null} */ (null);
-
-      const btns = document.querySelectorAll("[data-menu-button]");
-      const panels = document.querySelectorAll("[data-menu-panel]");
-
-      function setOpen(id) {
-        open = id;
-        btns.forEach((b) => {
-          const key = b.getAttribute("data-menu-button");
-          const expanded = key === open;
-          b.setAttribute("aria-expanded", expanded ? "true" : "false");
-        });
-        panels.forEach((p) => {
-          const key = p.getAttribute("data-menu-panel");
-          const visible = key === open;
-          p.classList.toggle("invisible", !visible);
-          p.classList.toggle("opacity-0", !visible);
-          p.classList.toggle("pointer-events-none", !visible);
-        });
-      }
-
-      btns.forEach((b) => {
-        b.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const key = b.getAttribute("data-menu-button");
-          setOpen(open === key ? null : /** @type any */ (key));
-        });
-
-        b.addEventListener("keydown", (ev) => {
-          if (ev.key === "ArrowDown") {
-            ev.preventDefault();
-            const key = b.getAttribute("data-menu-button");
-            setOpen(/** @type any */ (key));
-            const panel = document.querySelector(
-              `[data-menu-panel="${key}"] [role="menuitem"]`
-            );
-            if (panel) (panel).focus();
-          }
-        });
-      });
-
-      document.addEventListener("click", () => setOpen(null));
-      document.addEventListener("keydown", (ev) => {
-        if (ev.key === "Escape") setOpen(null);
-      });
-
-      // Close after clicking a link in any panel
-      document.querySelectorAll("[data-close-on-click]").forEach((el) => {
-        el.addEventListener("click", () => setOpen(null));
-      });
-
-      // Prevent panel click from bubbling (so outside-click works)
-      panels.forEach((p) => p.addEventListener("click", (e) => e.stopPropagation()));
-    })();
-  </script>
 </header>
 
+<script is:raw>
+  (function () {
+    const triggers = Array.from(document.querySelectorAll(".dropdown-trigger"));
+    const panelsByKey = {
+      provinces: document.getElementById("dropdown-provinces"),
+      tips: document.getElementById("dropdown-tips"),
+      socials: document.getElementById("dropdown-socials"),
+    };
+
+    function closeAll() {
+      triggers.forEach((b) => b.setAttribute("aria-expanded", "false"));
+      Object.values(panelsByKey).forEach((p) => p && p.setAttribute("data-open", "false"));
+    }
+
+    function toggle(key, btn) {
+      const panel = panelsByKey[key];
+      if (!panel) return;
+      const willOpen = panel.getAttribute("data-open") !== "true";
+      closeAll();
+      if (willOpen) {
+        btn.setAttribute("aria-expanded", "true");
+        panel.setAttribute("data-open", "true");
+      }
+    }
+
+    // Click handlers
+    triggers.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const key = btn.getAttribute("data-dropdown");
+        if (!key) return;
+        e.stopPropagation();
+        toggle(key, btn);
+      });
+    });
+
+    // Close on outside click or Esc
+    document.addEventListener("click", (e) => {
+      if (!(e.target.closest && e.target.closest(".dropdown-panel")) &&
+          !(e.target.closest && e.target.closest(".dropdown-trigger"))) {
+        closeAll();
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAll();
+    });
+  })();
+</script>
