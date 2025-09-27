@@ -41,6 +41,10 @@ export async function fetchJson<T>(url: string): Promise<T> {
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
       }
+      const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+      if (!contentType.includes("application/json") && !contentType.includes("+json")) {
+        return {} as T;
+      }
       return (await response.json()) as T;
     } catch (error) {
       if (attempt >= RETRY_DELAYS.length) {
@@ -256,21 +260,39 @@ export async function getPopular(limit: number) {
 
 export async function getProvince(province: string, pageSize: number, page: number) {
   const url = endpoints.province(province, pageSize, page);
-  const json = await fetchJson<unknown>(url);
-  const parsed = profileResponseSchema.parse(json);
-
-  const profiles = extractProfiles(parsed);
-  const totalCount = extractTotal(parsed) ?? profiles.length;
-  const totalPages = extractPageCount(parsed) ?? (totalCount ? Math.max(1, Math.ceil(totalCount / pageSize)) : undefined);
-
-  return {
+  const fallback = {
     province,
     page,
     pageSize,
-    profiles,
-    totalCount,
-    totalPages,
+    profiles: [] as Profile[],
+    totalCount: 0,
+    totalPages: 1,
   };
+
+  try {
+    const json = await fetchJson<unknown>(url);
+    const parsedResult = profileResponseSchema.safeParse(json);
+    if (!parsedResult.success) {
+      return fallback;
+    }
+
+    const parsed = parsedResult.data;
+
+    const profiles = extractProfiles(parsed);
+    const totalCount = extractTotal(parsed) ?? profiles.length;
+    const totalPages = extractPageCount(parsed) ?? (totalCount ? Math.max(1, Math.ceil(totalCount / pageSize)) : undefined);
+
+    return {
+      province,
+      page,
+      pageSize,
+      profiles,
+      totalCount,
+      totalPages,
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 export { BASE };
