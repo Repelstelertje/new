@@ -33,7 +33,7 @@ jobs:
           node -v
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: pnpm install   # geen --frozen-lockfile (lockfile ontbreekt in repo)
 
       - name: Build
         env:
@@ -46,6 +46,9 @@ jobs:
           ls -lah dist || true
           echo "::endgroup::"
           test -f dist/index.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
