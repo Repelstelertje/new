@@ -74,3 +74,26 @@ export const WEBSITE_JSONLD = jsonld("WebSite", {
     "query-input": "required name=search_term_string",
   },
 });
+
+// --- ADD: types en helper beneden in seo.ts ---
+type OGInput = {
+  title?: string;
+  description?: string;
+  image?: string; // absoluut of relatief pad
+  type?: "website" | "article";
+  url?: string; // absolute canonical URL
+};
+
+export function buildOpenGraph(input: OGInput = {}) {
+  const fallbackTitle = config.site.name;
+  const defaultImage = config.seo.openGraph?.defaultImage || "/og/default.jpg";
+  return {
+    title: input.title ?? fallbackTitle,
+    description: input.description,
+    image: input.image ?? defaultImage,
+    type: input.type ?? "website",
+    url: input.url, // Base.astro zet hier canonical in als die beschikbaar is
+    siteName: config.site.name,
+    twitterCard: "summary_large_image",
+  };
+}
