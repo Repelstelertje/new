@@ -1,0 +1,54 @@
+---
+import Base from "../../layouts/Base.astro";
+import { buildTitle, buildDescription } from "../../lib/seo";
+
+const stagingEnv = import.meta.env.STAGING;
+const staging = stagingEnv === true || stagingEnv === "true";
+
+const title = buildTitle("generic", { pageTitle: "Dating in Nederland" });
+const description = buildDescription("generic", {
+  pageDescription: "Bekijk alle provincies in Nederland en klik door naar volwassen chatsessies zonder gedoe.",
+});
+---
+<Base title={title} description={description} path="/dating-nederland/" staging={staging}>
+  <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Dating Nederland: alle provincies in één overzicht</h1>
+      <p class="text-lg text-neutral-600">
+        Kies je provincie en ontdek welke chats er klaarstaan. We updaten dit overzicht regelmatig zodat je altijd met
+        echte locals in contact komt.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-accent/90"
+      >
+        Start chat — 18+
+      </a>
+      <p class="text-sm text-neutral-500">Begin bij je favoriete provincie en chat direct via onze partners.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-semibold text-neutral-900">Provincies (binnenkort live)</h2>
+    <p class="text-neutral-600">
+      Binnenkort tonen we hier een interactief overzicht van alle Nederlandse provincies met doorverwijzingen naar de
+      populairste profielen. We zorgen ervoor dat je snel de juiste match vindt.
+    </p>
+    <div class="grid gap-3 text-neutral-500 sm:grid-cols-2 lg:grid-cols-3">
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Drenthe</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Flevoland</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Friesland</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Gelderland</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Groningen</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Limburg</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Noord-Brabant</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Noord-Holland</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Overijssel</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Utrecht</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Zeeland</span>
+      <span class="rounded border border-dashed border-neutral-200 px-4 py-3 text-center">Zuid-Holland</span>
+    </div>
+  </section>
+</Base>

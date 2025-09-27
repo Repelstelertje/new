@@ -1,0 +1,56 @@
+---
+import Base from "../../layouts/Base.astro";
+import { buildTitle, buildDescription } from "../../lib/seo";
+
+const stagingEnv = import.meta.env.STAGING;
+const staging = stagingEnv === true || stagingEnv === "true";
+
+const title = buildTitle("generic", { pageTitle: "Cookiebeleid" });
+const description = buildDescription("generic", {
+  pageDescription: "Ontdek welke cookies we gebruiken om de website sneller en veiliger te maken voor volwassen bezoekers.",
+});
+---
+<Base title={title} description={description} path="/cookies/" staging={staging}>
+  <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Cookiebeleid</h1>
+      <p class="text-lg text-neutral-600">
+        We houden het eenvoudig: alleen functionele en analytische cookies om je ervaring te verbeteren. Geen tracking op
+        persoonsniveau zonder expliciete toestemming.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-accent/90"
+      >
+        Start chat — 18+
+      </a>
+      <p class="text-sm text-neutral-500">Door onze beperkte cookies blijf je anoniem en houd je controle.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm text-neutral-700">
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Soorten cookies</h2>
+      <ul class="list-disc space-y-2 pl-5">
+        <li><strong>Functioneel:</strong> nodig om de site stabiel en veilig te laten draaien.</li>
+        <li><strong>Analytics:</strong> helpt ons te begrijpen welke pagina's populair zijn zonder je te identificeren.</li>
+        <li><strong>Partnercookies:</strong> kunnen actief worden zodra je doorklikt naar een externe chatdienst.</li>
+      </ul>
+    </article>
+
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Cookie-instellingen beheren</h2>
+      <p>
+        Bij je eerste bezoek tonen we een duidelijke melding. Je kunt altijd je voorkeuren wijzigen via de knop
+        "Cookie-instellingen" in de footer (binnenkort beschikbaar). Voor vragen neem je contact op via
+        support@oproepjesnederland.nl.
+      </p>
+      <p>
+        Wanneer je onze partners bezoekt, kunnen aanvullende cookies gelden. Lees hun beleid om te weten welke data wordt
+        verzameld.
+      </p>
+    </article>
+  </section>
+</Base>

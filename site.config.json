@@ -1,10 +1,129 @@
 {
-  "site":{"name":"OproepjesNederland","domain":"oproepjesnederland.nl","defaultLocale":"nl","canonicalBase":"https://oproepjesnederland.nl"},
-  "routing":{"trailingSlash":true,"routes":{"home":"/","country":"/dating-nederland/","province":"/dating-{provincie}/","provincePage":"/dating-{provincie}/page/{n}/"},"legacyRedirects":[{"from":"/nl/","to":"/dating-nederland/"},{"from":"/nl/{provincie}/","to":"/dating-{provincie}/"}]},
-  "api":{"baseUrl":"https://16hl07csd16.nl","endpoints":{"popular":"/profile/banner2/{limit}","province":"/profile/province/nl/{provincie}/{limit}"},"auth":{"type":"none","token":""},"limits":{"timeoutMs":8000,"ratePerMin":60,"pageSize":60},"deeplink":{"base":"https://chat.domein.tld/","utm":{"source":"oproepjes","medium":"referral","campaign":"provincie-{provincie}"},"subidParam":"subid"}},
-  "seo":{"title":{"home":"Adult dating per provincie | {brand}","province":"Dating in {provincie} – Profielen & chat | {brand}"},"description":{"home":"Ontdek populaire profielen per provincie en ga direct door naar de chat. Veilig, snel en 18+.","province":"Bekijk {count} profielen uit {provincie}. Klik door naar de echte chat en maak gratis een account (18+)."},"canonical":true,"sitemaps":{"main":true,"perProvince":true},"structuredData":{"itemList":true,"profileSchema":"thing"},"openGraph":{"defaultImage":"/og/default.jpg","perProvince":false},"robots":{"index":true,"follow":true}},
-  "performance":{"budget":{"jsKb":60,"cssKb":15,"imgPolicy":"webp,jpg responsive"},"cwvTargets":{"lcpMs":2500,"inpMs":200,"cls":0.1}},
-  "security":{"csp":{"imgSrc":["'self'","https:","data:"],"scriptSrc":["'self'"],"connectSrc":["https://16hl07csd16.nl"],"frameAncestors":["'none'"]},"referrerPolicy":"strict-origin-when-cross-origin"},
-  "analytics":{"tool":"plausible","domain":"oproepjesnederland.nl","events":["outbound_click","profile_impression","cta_view"],"consentMode":"cookieless"},
-  "build":{"framework":"astro","node":"20.x","packageManager":"pnpm","outDir":"dist","cron":"0 */6 * * *"}
+  "site": {
+    "name": "OproepjesNederland",
+    "domain": "oproepjesnederland.nl",
+    "defaultLocale": "nl",
+    "canonicalBase": "https://oproepjesnederland.nl"
+  },
+  "routing": {
+    "trailingSlash": true,
+    "routes": {
+      "home": "/",
+      "country": "/dating-nederland/",
+      "province": "/dating-{provincie}/",
+      "provincePage": "/dating-{provincie}/page/{n}/"
+    },
+    "legacyRedirects": [
+      {
+        "from": "/nl/",
+        "to": "/dating-nederland/"
+      },
+      {
+        "from": "/nl/{provincie}/",
+        "to": "/dating-{provincie}/"
+      }
+    ]
+  },
+  "api": {
+    "baseUrl": "https://16hl07csd16.nl",
+    "endpoints": {
+      "popular": "/profile/banner2/{limit}",
+      "province": "/profile/province/nl/{provincie}/{limit}"
+    },
+    "auth": {
+      "type": "none",
+      "token": ""
+    },
+    "limits": {
+      "timeoutMs": 8000,
+      "ratePerMin": 60,
+      "pageSize": 60
+    },
+    "deeplink": {
+      "base": "https://chat.domein.tld/",
+      "utm": {
+        "source": "oproepjes",
+        "medium": "referral",
+        "campaign": "provincie-{provincie}"
+      },
+      "subidParam": "subid"
+    }
+  },
+  "seo": {
+    "title": {
+      "home": "Adult dating per provincie | {brand}",
+      "province": "Dating in {provincie} – Profielen & chat | {brand}",
+      "generic": "{pageTitle} | {brand}"
+    },
+    "description": {
+      "home": "Ontdek populaire profielen per provincie en ga direct door naar de chat. Veilig, snel en 18+.",
+      "province": "Bekijk {count} profielen uit {provincie}. Klik door naar de echte chat en maak gratis een account (18+).",
+      "generic": "{pageDescription}"
+    },
+    "canonical": true,
+    "sitemaps": {
+      "main": true,
+      "perProvince": true
+    },
+    "structuredData": {
+      "itemList": true,
+      "profileSchema": "thing"
+    },
+    "openGraph": {
+      "defaultImage": "/og/default.jpg",
+      "perProvince": false
+    },
+    "robots": {
+      "index": true,
+      "follow": true
+    }
+  },
+  "performance": {
+    "budget": {
+      "jsKb": 60,
+      "cssKb": 15,
+      "imgPolicy": "webp,jpg responsive"
+    },
+    "cwvTargets": {
+      "lcpMs": 2500,
+      "inpMs": 200,
+      "cls": 0.1
+    }
+  },
+  "security": {
+    "csp": {
+      "imgSrc": [
+        "'self'",
+        "https:",
+        "data:"
+      ],
+      "scriptSrc": [
+        "'self'"
+      ],
+      "connectSrc": [
+        "https://16hl07csd16.nl"
+      ],
+      "frameAncestors": [
+        "'none'"
+      ]
+    },
+    "referrerPolicy": "strict-origin-when-cross-origin"
+  },
+  "analytics": {
+    "tool": "plausible",
+    "domain": "oproepjesnederland.nl",
+    "events": [
+      "outbound_click",
+      "profile_impression",
+      "cta_view"
+    ],
+    "consentMode": "cookieless"
+  },
+  "build": {
+    "framework": "astro",
+    "node": "20.x",
+    "packageManager": "pnpm",
+    "outDir": "dist",
+    "cron": "0 */6 * * *"
+  }
 }

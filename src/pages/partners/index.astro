@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+import { buildTitle, buildDescription } from "../../lib/seo";
+
+const stagingEnv = import.meta.env.STAGING;
+const staging = stagingEnv === true || stagingEnv === "true";
+
+const title = buildTitle("generic", { pageTitle: "Partnerprogramma" });
+const description = buildDescription("generic", {
+  pageDescription: "Lees hoe we samenwerken met chatpartners en welke kwaliteitscriteria we hanteren.",
+});
+---
+<Base title={title} description={description} path="/partners/" staging={staging}>
+  <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Partnerprogramma</h1>
+      <p class="text-lg text-neutral-600">
+        OproepjesNederland werkt samen met zorgvuldig geselecteerde chatnetwerken. We zoeken partners die discreet,
+        betrouwbaar en 18+ georiënteerd zijn.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-accent/90"
+      >
+        Start chat — 18+
+      </a>
+      <p class="text-sm text-neutral-500">Benieuwd naar samenwerking? Mail ons op partnerships@oproepjesnederland.nl.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm text-neutral-700">
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Onze kwaliteitsstandaarden</h2>
+      <ul class="list-disc space-y-2 pl-5">
+        <li>Alle deelnemers verifiëren leeftijd en identiteit van chatoperators.</li>
+        <li>Snelle supportkanalen voor bezoekers die vragen of klachten hebben.</li>
+        <li>Heldere tarieven en transparantie over eventuele premiumfuncties.</li>
+      </ul>
+    </article>
+
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Samenwerken?</h2>
+      <p>
+        We staan open voor nieuwe partners die een volwassen publiek bedienen. Neem contact op met een korte introductie
+        van je platform, doelgroep en kwaliteitsmaatregelen. We reageren doorgaans binnen twee werkdagen.
+      </p>
+      <p>
+        Na goedkeuring ontvang je materiaal om je aanbod op OproepjesNederland te presenteren, inclusief trackingopties
+        voor gezamenlijke campagnes.
+      </p>
+    </article>
+  </section>
+</Base>
