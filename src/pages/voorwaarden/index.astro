@@ -1,0 +1,54 @@
+---
+import Base from "../../layouts/Base.astro";
+import { buildTitle, buildDescription } from "../../lib/seo";
+
+const stagingEnv = import.meta.env.STAGING;
+const staging = stagingEnv === true || stagingEnv === "true";
+
+const title = buildTitle("generic", { pageTitle: "Gebruiksvoorwaarden" });
+const description = buildDescription("generic", {
+  pageDescription: "Lees de voorwaarden van OproepjesNederland voordat je onze volwassen chatdiensten gebruikt.",
+});
+---
+<Base title={title} description={description} path="/voorwaarden/" staging={staging}>
+  <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Gebruiksvoorwaarden</h1>
+      <p class="text-lg text-neutral-600">
+        Door OproepjesNederland te gebruiken ga je akkoord met onderstaande spelregels. We houden het veilig, respectvol
+        en exclusief voor 18+ bezoekers.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-accent/90"
+      >
+        Start chat — 18+
+      </a>
+      <p class="text-sm text-neutral-500">Respecteer je chatpartner en meld misbruik via support@oproepjesnederland.nl.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm text-neutral-700">
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Toegang en gedrag</h2>
+      <p>
+        Deze website is uitsluitend toegankelijk voor volwassenen van 18 jaar en ouder. Ongepaste inhoud, spam of
+        discriminatie is niet toegestaan. We behouden ons het recht voor om toegang te blokkeren bij misbruik.
+      </p>
+    </article>
+
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Aansprakelijkheid</h2>
+      <p>
+        OproepjesNederland fungeert als doorverwijzer naar externe chatdiensten. We zijn niet verantwoordelijk voor de
+        inhoud of dienstverlening van onze partners, maar we werken uitsluitend met aanbieders die betrouwbaar zijn.
+      </p>
+      <p>
+        Door gebruik te maken van externe diensten accepteer je hun voorwaarden. Wij kunnen wijzigingen aanbrengen in dit
+        beleid zonder voorafgaande melding, dus kom regelmatig terug voor updates.
+      </p>
+    </article>
+  </section>
+</Base>

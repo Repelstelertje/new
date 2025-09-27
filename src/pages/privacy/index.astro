@@ -1,0 +1,59 @@
+---
+import Base from "../../layouts/Base.astro";
+import { buildTitle, buildDescription } from "../../lib/seo";
+
+const stagingEnv = import.meta.env.STAGING;
+const staging = stagingEnv === true || stagingEnv === "true";
+
+const title = buildTitle("generic", { pageTitle: "Privacybeleid" });
+const description = buildDescription("generic", {
+  pageDescription: "Lees hoe OproepjesNederland omgaat met persoonsgegevens en je chatervaring beschermt.",
+});
+---
+<Base title={title} description={description} path="/privacy/" staging={staging}>
+  <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
+    <div class="flex flex-col gap-4">
+      <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Privacybeleid</h1>
+      <p class="text-lg text-neutral-600">
+        Jouw vertrouwen staat centraal. Dit privacybeleid licht toe welke gegevens we verzamelen, hoe we ze beveiligen en
+        hoe jij controle houdt over je informatie.
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-4">
+      <a
+        href="/dating-nederland/"
+        class="inline-flex items-center justify-center rounded-full bg-accent px-6 py-3 text-base font-semibold text-white shadow transition hover:bg-accent/90"
+      >
+        Start chat — 18+
+      </a>
+      <p class="text-sm text-neutral-500">We delen nooit persoonlijke gegevens met chatpartners zonder toestemming.</p>
+    </div>
+  </section>
+
+  <section class="grid gap-6 rounded-2xl bg-white p-8 shadow-sm text-neutral-700">
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Welke data we verwerken</h2>
+      <p>
+        OproepjesNederland werkt met minimale gegevens. We bewaren enkel de informatie die nodig is om je door te
+        verwijzen naar onze chatpartners en statistieken te verzamelen voor platformverbeteringen.
+      </p>
+      <ul class="list-disc space-y-2 pl-5">
+        <li>Technische gegevens zoals IP-adressen en browserinformatie voor beveiliging.</li>
+        <li>Anonieme analytics om te begrijpen hoe bezoekers de website gebruiken.</li>
+        <li>Optionele contactgegevens wanneer je zelf een aanvraag indient.</li>
+      </ul>
+    </article>
+
+    <article class="space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Bewaartermijn & rechten</h2>
+      <p>
+        Gegevens worden niet langer bewaard dan noodzakelijk. Je kunt altijd inzage vragen in de informatie die we over
+        je hebben opgeslagen of verzoeken om verwijdering. Stuur hiervoor een e-mail naar support@oproepjesnederland.nl.
+      </p>
+      <p>
+        Wanneer je gebruikmaakt van onze partners, gelden tevens hun privacyvoorwaarden. We raden aan deze aandachtig te
+        lezen voordat je een account aanmaakt.
+      </p>
+    </article>
+  </section>
+</Base>

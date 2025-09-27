@@ -8,7 +8,7 @@ interface Props {
   description?: string;
   path?: string;
   staging?: boolean;
-  jsonLd?: any[];
+  jsonLd?: Record<string, unknown>[];
 }
 
 const { title, description, path, staging = false, jsonLd = [] }: Props = Astro.props;
@@ -28,7 +28,9 @@ const currentYear = new Date().getFullYear();
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    {jsonLd.map((schema, index) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} data-schema-index={index} />
+    ))}
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
@@ -49,8 +51,18 @@ const currentYear = new Date().getFullYear();
       <slot />
     </main>
     <footer class="border-t border-neutral-200 bg-white">
-      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-neutral-600">
-        <slot name="footer">© {currentYear} OproepjesNederland. Alle rechten voorbehouden.</slot>
+      <div class="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6 text-sm text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
+        <nav aria-label="Juridische pagina's">
+          <ul class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <li><a class="transition hover:text-neutral-900" href="/privacy/">Privacy</a></li>
+            <li><a class="transition hover:text-neutral-900" href="/cookies/">Cookies</a></li>
+            <li><a class="transition hover:text-neutral-900" href="/voorwaarden/">Voorwaarden</a></li>
+            <li><a class="transition hover:text-neutral-900" href="/partners/">Partners</a></li>
+          </ul>
+        </nav>
+        <div class="text-neutral-500">
+          <slot name="footer">© {currentYear} OproepjesNederland. Alle rechten voorbehouden.</slot>
+        </div>
       </div>
     </footer>
   </body>
