@@ -98,20 +98,22 @@ const rawProfileSchema = z
   })
   .passthrough();
 
-// Helper om base + filename te joinen met exact één slash
-function joinUrl(base?: string, file?: string) {
-  if (!base || !file) return undefined;
-  return `${base.replace(/\/+$/, "")}/${file.replace(/^\/+/, "")}`;
-}
-
 export type Profile = {
   id: string;
   name: string;
   age: number;
   province: string;
+  city?: string;
+  relationship?: string;
+  height?: string;
   description?: string;
   deeplink: string;
-  img: { src: string; alt: string; srcset?: string; sizes?: string };
+  img: {
+    src: string;
+    alt: string;
+    srcset?: string;
+    sizes?: string;
+  };
 };
 
 function resolveImageSource(raw: z.infer<typeof imageSourceSchema>): Profile["img"] {
@@ -119,32 +121,6 @@ function resolveImageSource(raw: z.infer<typeof imageSourceSchema>): Profile["im
   if (typeof raw === "string") return { src: raw, alt: "" };
   const src = raw.src ?? raw.url ?? FALLBACK_IMG;
   return { src, alt: raw.alt ?? "", srcset: raw.srcset, sizes: raw.sizes };
-}
-
-function resolveImageSourceFromRaw(raw: z.infer<typeof rawProfileSchema>): Profile["img"] {
-  // 1) Volledige URL in top-level `src`
-  if (typeof raw.src === "string" && raw.src.length > 0) {
-    return { src: raw.src, alt: "" };
-  }
-  // 2) picture_url + basename
-  const joined = joinUrl(raw.picture_url, raw.basename);
-  if (joined) {
-    return { src: joined, alt: "" };
-  }
-  // 3) oude velden (image/avatar/picture/img/images)
-  const imageSource =
-    raw.image ??
-    raw.avatar ??
-    raw.picture ??
-    raw.img ??
-    raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img));
-
-  if (!imageSource) {
-    return { src: FALLBACK_IMG, alt: "" };
-  }
-
-  // Reuse bestaande resolver voor union-type
-  return resolveImageSource(imageSource);
 }
 
 function coerceNumber(n: unknown): number | undefined {
@@ -177,23 +153,35 @@ const profileSchema = rawProfileSchema.transform((raw) => {
 
   const deeplink = raw.deeplink ?? raw.url ?? raw.link ?? config.api.deeplink.base;
 
-  // Gebruik nieuwe resolver (src / picture_url+basename / fallback)
-  const img = resolveImageSourceFromRaw(raw);
+  const imageSource =
+    raw.image ??
+    raw.avatar ??
+    raw.picture ??
+    raw.img ??
+    raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img));
 
-  // Alt-tekst altijd betekenisvol maken
-  const altParts = [raw.name, raw.province].filter(Boolean);
-  const alt = altParts.join(", ");
+  // Extra velden uit API mappen
+  const description =
+    (raw as any).description ??
+    (raw as any).aboutme ??
+    (raw as any).bio ??
+    undefined;
 
-  const finalImg = img?.src ? img : { src: FALLBACK_IMG, alt: "" };
+  const city = (raw as any).city ?? undefined;
+  const relationship = (raw as any).relationship ?? undefined;
+  const height = (raw as any).length ?? undefined;
 
   return {
     id: String(raw.id),
     name: raw.name,
     age,
-    province: raw.province ?? "",
-    description: raw.description ?? raw.aboutme,
-    deeplink: appendUtm(deeplink, raw.province ?? "", raw.id),
-    img: { ...finalImg, alt },
+    province: raw.province,
+    city,
+    relationship,
+    height,
+    description,
+    deeplink: appendUtm(deeplink, raw.province, raw.id),
+    img: resolveImageSource(imageSource),
   } satisfies Profile;
 });
 
