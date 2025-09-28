@@ -68,6 +68,17 @@ const {
   rank?: number;
 };
 
+// helper: kort en netjes afbreken rond woordgrens
+function trim(text: string, max = 140) {
+  if (!text) return "";
+  if (text.length <= max) return text;
+  const sliced = text.slice(0, max);
+  const cutAt = Math.max(sliced.lastIndexOf(" "), Math.floor(max * 0.9));
+  return sliced.slice(0, cutAt).trimEnd() + "…";
+}
+
+const preview = description ? trim(description, 140) : "";
+
 const responsiveSrcset = ensureResponsiveSrcset(img.src, img.srcset);
 const responsiveSizes =
   img.sizes ?? "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw";
@@ -111,7 +122,15 @@ const analyticsProps = JSON.stringify({
       <h3 class="text-xl font-semibold text-slate-900">{name}</h3>
       <p class="text-sm text-slate-700">{age} jaar &middot; {province}</p>
     </div>
-    {description && <p class="text-sm text-slate-700">{description}</p>}
+    {preview && (
+      <p
+        class="text-sm text-slate-700"
+        title={description}
+        style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"
+      >
+        {preview}
+      </p>
+    )}
     <div class="mt-auto">
       <a
         href={deeplink}
