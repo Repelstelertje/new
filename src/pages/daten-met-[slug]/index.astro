@@ -1,3 +1,4 @@
+---
 import Base from "../../layouts/Base.astro";
 import { config } from "../../lib/config";
 import { getProvince } from "../../lib/api";
@@ -8,9 +9,11 @@ type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
 
 export async function getStaticPaths() {
   const pageSize = config.api.limits?.pageSize ?? 60;
-  const paths: Array<{ params: { slug: string }, props: { profile: CardProfile } }> = [];
 
-  // Verzamel ALLE profielen die we toch al tijdens build kunnen ophalen
+  // Gebruik bracket-arraytype ipv Array<...> om parser-issues te voorkomen
+  const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
+
+  // Verzamel ALLE profielen die we tijdens build kunnen ophalen
   for (const provinceName of PROVINCES) {
     const first = await getProvince(provinceName, pageSize, 1);
     const totalPages = first.totalPages ?? 1;
@@ -19,7 +22,6 @@ export async function getStaticPaths() {
       const data = page === 1 ? first : await getProvince(provinceName, pageSize, page);
       for (const p of data.profiles) {
         const slug = slugifyName(p.name);
-        // Let op: slug-collisies komen zelden voor; als het gebeurt, renderen we de laatst ingezamelde.
         paths.push({ params: { slug }, props: { profile: p } });
       }
     };
@@ -34,12 +36,12 @@ export async function getStaticPaths() {
 
 const { profile } = Astro.props as { profile: CardProfile };
 
-// Geen harde redirect meer op query-id mismatch.
-// We lezen de query alleen om de canonical te verrijken (optioneel).
+// Geen harde redirect meer bij query-id mismatch; render altijd.
+// We nemen id uit query op in canonical voor stabiliteit.
 const q = new URL(Astro.url).searchParams;
 const idParam = q.get("id") ?? String(profile.id);
 
-// SEO
+// SEO & canonical
 const title = `Date met ${profile.name} in ${profile.province}`;
 const description = profile.description ?? `Leer ${profile.name} kennen en stuur gratis een bericht.`;
 const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idParam))}`;
@@ -48,7 +50,7 @@ const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idPa
 const imgSrc = profile.img?.src ?? "/img/fallback.svg";
 const imgAlt = profile.img?.alt ?? profile.name;
 
-// JSON-LD minimaal, veilig
+// JSON-LD minimaal
 const personLd = { "@type": "Person", name: profile.name, description: profile.description ?? undefined };
 ---
 <Base title={title} description={description} path={canonicalPath} staging={import.meta.env.STAGING} jsonLd={[personLd]}>
