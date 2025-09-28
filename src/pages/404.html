@@ -1,133 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="nl">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pagina niet gevonden | OproepjesNederland</title>
-    <meta
-      name="description"
-      content="De opgevraagde pagina bestaat niet. Ga terug naar de homepage of kies direct een provincie om onze datingoproepen te bekijken."
-    />
-    <style>
-      :root {
-        color-scheme: light;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background-color: #fafafa;
-        color: #1f2937;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-      }
-      .card {
-        max-width: 760px;
-        width: 100%;
-        background: #ffffff;
-        border-radius: 1.5rem;
-        box-shadow: 0 10px 40px rgba(15, 23, 42, 0.08);
-        padding: 3rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1.75rem;
-      }
-      .card h1 {
-        font-size: clamp(2rem, 4vw, 2.5rem);
-        margin: 0;
-      }
-      .card p {
-        margin: 0;
-        color: #4b5563;
-        font-size: 1rem;
-        line-height: 1.6;
-      }
-      .cta {
-        display: inline-flex;
-        align-self: flex-start;
-        align-items: center;
-        justify-content: center;
-        background: #ef4444;
-        color: #ffffff;
-        padding: 0.75rem 1.75rem;
-        border-radius: 9999px;
-        font-weight: 600;
-        text-decoration: none;
-        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.25);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-      .cta:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 30px rgba(239, 68, 68, 0.35);
-      }
-      .link-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 0.75rem;
-      }
-      .link-grid a {
-        display: block;
-        padding: 0.6rem 0.75rem;
-        border-radius: 0.75rem;
-        background: #f3f4f6;
-        color: #1f2937;
-        text-decoration: none;
-        font-weight: 500;
-        transition: background 0.2s ease, transform 0.2s ease;
-      }
-      .link-grid a:hover {
-        background: #e5e7eb;
-        transform: translateY(-1px);
-      }
-      .footer-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        font-size: 0.875rem;
-      }
-      .footer-links a {
-        color: #4b5563;
-        text-decoration: none;
-      }
-      .footer-links a:hover {
-        color: #1f2937;
-      }
-    </style>
+    <title>Pagina niet gevonden</title>
+    <link rel="canonical" href="https://oproepjesnederland.nl/404.html" />
+    <!-- Tailwind is globally built; this page still benefits from base styles on Pages -->
+    <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/styles/fonts.css" />
+    <link rel="stylesheet" href="/src/styles/tailwind.css" />
   </head>
-  <body>
-    <main class="card">
-      <h1>Oeps, deze pagina is niet gevonden</h1>
-      <p>
-        Het lijkt erop dat de link die je hebt gevolgd niet (meer) bestaat. Ga terug naar onze homepage of kies direct een
-        provincie om lokale chats te ontdekken.
-      </p>
-      <a class="cta" href="/">Terug naar home</a>
-      <section>
-        <h2 style="font-size: 1.125rem; margin: 0 0 0.5rem 0;">Kies je provincie</h2>
-        <div class="link-grid">
-          <a href="/dating-drenthe/">Dating Drenthe</a>
-          <a href="/dating-flevoland/">Dating Flevoland</a>
-          <a href="/dating-friesland/">Dating Friesland</a>
-          <a href="/dating-gelderland/">Dating Gelderland</a>
-          <a href="/dating-groningen/">Dating Groningen</a>
-          <a href="/dating-limburg/">Dating Limburg</a>
-          <a href="/dating-noord-brabant/">Dating Noord-Brabant</a>
-          <a href="/dating-noord-holland/">Dating Noord-Holland</a>
-          <a href="/dating-overijssel/">Dating Overijssel</a>
-          <a href="/dating-utrecht/">Dating Utrecht</a>
-          <a href="/dating-zeeland/">Dating Zeeland</a>
-          <a href="/dating-zuid-holland/">Dating Zuid-Holland</a>
-        </div>
+  <body class="bg-neutral-50 text-neutral-900">
+    <main id="content" class="mx-auto max-w-5xl px-4 py-10">
+      <!-- Profile fallback mount (hidden unless route matches /daten-met-... ) -->
+      <div id="profile-view" class="space-y-6"></div>
+
+      <!-- Normal 404 content (hidden when profile-fallback runs) -->
+      <section id="not-found" class="space-y-4">
+        <h1 class="text-2xl font-bold">Pagina niet gevonden</h1>
+        <p class="text-neutral-700">De opgevraagde pagina bestaat niet. Ga terug naar de <a class="text-sky-700 underline" href="/">homepage</a>.</p>
       </section>
-      <div class="footer-links">
-        <a href="/dating-nederland/">Dating Nederland</a>
-        <a href="/privacy/">Privacy</a>
-        <a href="/cookies/">Cookies</a>
-        <a href="/voorwaarden/">Voorwaarden</a>
-        <a href="/partners/">Partners</a>
-      </div>
     </main>
+
+    <!-- Client profile renderer -->
+    <script src="/js/profile-view.js" type="module"></script>
   </body>
 </html>
