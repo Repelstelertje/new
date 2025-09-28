@@ -76,6 +76,39 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
         <p class="text-neutral-800 leading-relaxed">{profile.description}</p>
       )}
 
+      <section class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-xl border border-neutral-200 bg-white p-4">
+          <p class="text-xs uppercase tracking-wide text-neutral-500">Provincie</p>
+          <p class="mt-1 font-medium text-neutral-900">{profile.province}</p>
+        </div>
+
+        {profile.city && (
+          <div class="rounded-xl border border-neutral-200 bg-white p-4">
+            <p class="text-xs uppercase tracking-wide text-neutral-500">Stad</p>
+            <p class="mt-1 font-medium text-neutral-900">{profile.city}</p>
+          </div>
+        )}
+
+        <div class="rounded-xl border border-neutral-200 bg-white p-4">
+          <p class="text-xs uppercase tracking-wide text-neutral-500">Leeftijd</p>
+          <p class="mt-1 font-medium text-neutral-900">{profile.age}</p>
+        </div>
+
+        {profile.relationship && (
+          <div class="rounded-xl border border-neutral-200 bg-white p-4">
+            <p class="text-xs uppercase tracking-wide text-neutral-500">Relatiestatus</p>
+            <p class="mt-1 font-medium text-neutral-900">{profile.relationship}</p>
+          </div>
+        )}
+
+        {profile.height && (
+          <div class="rounded-xl border border-neutral-200 bg-white p-4">
+            <p class="text-xs uppercase tracking-wide text-neutral-500">Lengte</p>
+            <p class="mt-1 font-medium text-neutral-900">{profile.height}</p>
+          </div>
+        )}
+      </section>
+
       <div class="pt-2">
         <a
           href={profile.deeplink}
