@@ -60,7 +60,6 @@ const {
   description,
   rank: _rank,
   slugOverride,
-  city,
 } = Astro.props as {
   id: string | number;
   name: string;
@@ -71,7 +70,6 @@ const {
   description?: string;
   rank?: number;
   slugOverride?: string;
-  city?: string;
 };
 
 // helper: kort en netjes afbreken rond woordgrens
@@ -104,7 +102,7 @@ const internalHref = buildProfileHref(slugOverride ?? name, id);
     class="group relative block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
   >
     <picture
-      class="block overflow-hidden bg-slate-100"
+      class="block aspect-[4/3] overflow-hidden bg-slate-100"
       style={`background-image: url('${blurDataUrl}'); background-size: cover; background-position: center;`}
     >
       <img
@@ -122,11 +120,8 @@ const internalHref = buildProfileHref(slugOverride ?? name, id);
   <div class="flex flex-1 flex-col gap-4 p-6 text-slate-900">
     <div>
       <h3 class="text-xl font-semibold text-slate-900">{name}</h3>
-      {/*
-        Toon stad als die bekend is; anders val terug op provincie
-      */}
-
-      <p class="text-sm text-slate-700">{age} jaar · {city ?? province}</p>
+      {/* Toon stad als die bekend is; anders val terug op provincie */}
+      <p class="text-sm text-slate-700">{age} jaar &middot; {Astro.props.city ?? province}</p>
     </div>
     {preview && (
       <p

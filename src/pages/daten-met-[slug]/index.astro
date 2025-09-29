@@ -3,12 +3,11 @@ import Base from "../../layouts/Base.astro";
 import { getProvince, getPopular } from "../../lib/api";
 import { PROVINCES } from "../../lib/provinces";
 import { slugifyName } from "../../lib/slug";
-import { config } from "../../lib/config";
 
 type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
 
 export async function getStaticPaths() {
-  const pageSize = config.api.limits?.pageSize ?? 60;
+  const pageSize = 60;
   const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
   const seen = new Set<string>();
 
@@ -20,7 +19,6 @@ export async function getStaticPaths() {
     paths.push({ params: { slug }, props: { profile } });
   };
 
-  // Neem ook populaire profielen mee (voor homepage-kaarten)
   try {
     const popular = await getPopular(240);
     for (const p of popular) push(p as CardProfile);
@@ -44,18 +42,11 @@ export async function getStaticPaths() {
 }
 
 const { profile } = Astro.props as { profile: CardProfile };
+const idParam = new URL(Astro.url).searchParams.get("id") ?? String(profile.id);
 
-// Query-id valideren (nodig voor juiste detail)
-const q = new URL(Astro.url).searchParams;
-const idParam = q.get("id");
-if (!idParam || String(idParam) !== String(profile.id)) {
-  return Astro.redirect("/404.html");
-}
-
-// SEO & canonical
 const title = `Date met ${profile.name} in ${profile.province}`;
 const description = profile.description ?? `Leer ${profile.name} kennen en stuur gratis een bericht.`;
-const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(profile.id))}`;
+const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idParam))}`;
 
 // Afbeelding + fallback
 const imgSrc = profile.img?.src ?? "/img/fallback.svg";

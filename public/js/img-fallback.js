@@ -1,16 +1,15 @@
-(function () {
-  function applyFallback(event) {
-    const img = event.target;
-    if (!(img instanceof HTMLImageElement)) return;
-    if (img.dataset.fallbackApplied === "true") return;
+document.addEventListener(
+  "error",
+  (e) => {
+    const el = e.target;
+    if (!(el instanceof HTMLImageElement)) return;
 
-    const fallback = img.getAttribute("data-fallback-src");
+    const fallback = el.getAttribute("data-fallback-src");
     if (!fallback) return;
 
-    img.dataset.fallbackApplied = "true";
-    img.removeAttribute("srcset");
-    img.src = fallback;
-  }
-
-  document.addEventListener("error", applyFallback, true);
-})();
+    el.removeAttribute("data-fallback-src");
+    el.srcset = "";
+    el.src = fallback;
+  },
+  true,
+);

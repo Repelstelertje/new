@@ -1,27 +1,28 @@
-/** Eenvoudige dropdown-controller: 1 tegelijk open, sluit bij klik buiten/ESC. */
 (() => {
-  const doc = document;
-  const toggles = Array.from(doc.querySelectorAll<HTMLButtonElement>("[data-menu-toggle]"));
-  let openId: string | null = null;
+  const d = document;
+  const toggles = Array.from(d.querySelectorAll("[data-menu-toggle]"));
+  let openId = null;
 
-  function closeAll() {
+  const closeAll = () => {
     for (const btn of toggles) {
       const id = btn.getAttribute("data-menu-toggle");
-      const panel = id ? doc.getElementById(id) : null;
+      const panel = id ? d.getElementById(id) : null;
       btn.setAttribute("aria-expanded", "false");
       panel?.classList.add("hidden");
     }
     openId = null;
-  }
-  function open(id: string) {
+  };
+
+  const open = (id) => {
     closeAll();
-    const btn = doc.querySelector<HTMLButtonElement>(`[data-menu-toggle="${id}"]`);
-    const panel = doc.getElementById(id);
+    const btn = d.querySelector(`[data-menu-toggle="${id}"]`);
+    const panel = d.getElementById(id);
     if (!btn || !panel) return;
     btn.setAttribute("aria-expanded", "true");
     panel.classList.remove("hidden");
     openId = id;
-  }
+  };
+
   toggles.forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -31,13 +32,15 @@
       else open(id);
     });
   });
-  doc.addEventListener("click", (e) => {
-    const t = e.target as Element | null;
-    if (!t) return;
+
+  d.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
     if (t.closest("[data-menu]") || t.closest("[data-menu-toggle]")) return;
     closeAll();
   });
-  doc.addEventListener("keydown", (e) => {
+
+  d.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeAll();
   });
 })();
