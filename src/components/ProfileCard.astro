@@ -89,7 +89,7 @@ const responsiveSrcset = ensureResponsiveSrcset(img.src, img.srcset);
 const responsiveSizes =
   img.sizes ?? "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw";
 const slug = slugOverride ?? slugifyName(name);
-const internalHref = `/daten-met-${slug}?id=${encodeURIComponent(String(id))}`;
+const internalHref = `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;
 ---
 <article
   class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-sky-500 hover:shadow-lg"
@@ -112,7 +112,7 @@ const internalHref = `/daten-met-${slug}?id=${encodeURIComponent(String(id))}`;
         loading="lazy"
         decoding="async"
         class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        onerror={`this.onerror=null; this.src='${"/img/fallback.svg"}';`}
+        data-fallback-src="/img/fallback.svg"
       />
     </picture>
   </a>

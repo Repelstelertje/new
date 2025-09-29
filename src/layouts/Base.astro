@@ -90,10 +90,11 @@ const ogData = buildOpenGraph({
         }
       />
     )}
-    <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
     {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    <script defer src="/js/nav.js"></script>
+    <script defer src="/js/img-fallback.js"></script>
     <script defer src="/js/age-gate.js"></script>
     <script defer src="/js/analytics.js"></script>
   </head>

@@ -76,15 +76,15 @@ const analyticsProps = JSON.stringify({
 const personLd = { "@type": "Person", name: profile.name, description: profile.description ?? undefined };
 ---
 <Base title={title} description={description} path={canonicalPath} staging={import.meta.env.STAGING} jsonLd={[personLd]}>
-  <article class="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-[320px,1fr]">
+  <article class="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-[360px,1fr]">
     <div class="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
       <img
         src={imgSrc}
         alt={imgAlt}
         loading="eager"
         decoding="async"
-        onerror="this.src='/img/fallback.svg'"
-        class="block h-auto w-full object-cover"
+        class="block w-full h-auto"
+        data-fallback-src="/img/fallback.svg"
       />
     </div>
 

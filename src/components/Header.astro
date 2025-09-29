@@ -14,41 +14,37 @@ const socials = [
 ---
 
 <header class="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-    <!-- Brand -->
-    <a href="/" aria-label="Ga naar home" class="flex items-center gap-2">
-      <span class="text-lg font-semibold tracking-tight text-neutral-900">OproepjesNederland</span>
+  <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
+    <a
+      href="/"
+      aria-label="Ga naar home"
+      class="text-lg font-semibold tracking-tight text-neutral-900 hover:text-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+    >
+      OproepjesNederland
     </a>
 
-    <!-- Nav -->
-    <nav class="relative">
-      <ul class="flex items-center gap-2">
-        <!-- Provinces -->
-        <li class="relative">
+    <nav aria-label="Hoofd navigatie">
+      <ul class="flex flex-wrap items-center gap-2">
+        <li class="relative" data-dropdown data-open="false">
           <button
-            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            data-dropdown="provinces"
+            type="button"
+            data-dropdown-toggle
             aria-haspopup="true"
             aria-expanded="false"
+            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
-            Provinces ▾
+            Provincies
+            <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div
-            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
-                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
-            id="dropdown-provinces"
-            role="menu"
-            aria-label="Provincies"
-          >
-            <ul class="grid grid-cols-1 gap-1">
-              {PROVINCES.map((p) => (
+          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+            <ul class="flex flex-col">
+              {PROVINCES.map((province) => (
                 <li>
                   <a
-                    href={`/dating-${provinceToSlug(p)}/`}
-                    class="block rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                    role="menuitem"
+                    class="block rounded px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    href={`/dating-${provinceToSlug(province)}/`}
                   >
-                    {p}
+                    {province}
                   </a>
                 </li>
               ))}
@@ -56,32 +52,26 @@ const socials = [
           </div>
         </li>
 
-        <!-- Datingtips -->
-        <li class="relative">
+        <li class="relative" data-dropdown data-open="false">
           <button
-            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            data-dropdown="tips"
+            type="button"
+            data-dropdown-toggle
             aria-haspopup="true"
             aria-expanded="false"
+            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
-            Datingtips ▾
+            Datingtips
+            <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div
-            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
-                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
-            id="dropdown-tips"
-            role="menu"
-            aria-label="Datingtips"
-          >
-            <ul class="grid grid-cols-1 gap-1">
-              {datingTips.map((t) => (
+          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+            <ul class="flex flex-col">
+              {datingTips.map((tip) => (
                 <li>
                   <a
-                    href={t.href}
-                    class="block rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                    role="menuitem"
+                    class="block rounded px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    href={tip.href}
                   >
-                    {t.label}
+                    {tip.label}
                   </a>
                 </li>
               ))}
@@ -89,36 +79,29 @@ const socials = [
           </div>
         </li>
 
-        <!-- Socials -->
-        <li class="relative">
+        <li class="relative" data-dropdown data-open="false">
           <button
-            class="dropdown-trigger rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            data-dropdown="socials"
+            type="button"
+            data-dropdown-toggle
             aria-haspopup="true"
             aria-expanded="false"
+            class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
-            Socials ▾
+            Socials
+            <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div
-            class="dropdown-panel invisible absolute left-0 mt-2 min-w-56 translate-y-1 rounded-2xl border border-neutral-200 bg-white p-2 opacity-0 shadow-xl transition
-                   data-[open=true]:visible data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
-            id="dropdown-socials"
-            role="menu"
-            aria-label="Social media"
-          >
-            <ul class="grid grid-cols-1 gap-1">
-              {socials.map((s) => (
+          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+            <ul class="flex flex-col">
+              {socials.map((social) => (
                 <li>
                   <a
-                    href={s.href}
+                    class="flex items-center gap-2 rounded px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                    href={social.href}
                     target="_blank"
                     rel="noopener nofollow"
-                    class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-                    role="menuitem"
-                    aria-label={s.label}
                   >
-                    <img src={s.icon} alt="" width="20" height="20" class="h-5 w-5" />
-                    <span>{s.label}</span>
+                    <img src={social.icon} alt="" width="16" height="16" class="h-4 w-4" />
+                    <span>{social.label}</span>
                   </a>
                 </li>
               ))}
@@ -128,52 +111,14 @@ const socials = [
       </ul>
     </nav>
   </div>
+
+  <style>
+    [data-dropdown] [data-dropdown-menu] {
+      display: none;
+    }
+
+    [data-dropdown][data-open="true"] [data-dropdown-menu] {
+      display: block;
+    }
+  </style>
 </header>
-
-<script is:raw>
-  (function () {
-    const triggers = Array.from(document.querySelectorAll(".dropdown-trigger"));
-    const panelsByKey = {
-      provinces: document.getElementById("dropdown-provinces"),
-      tips: document.getElementById("dropdown-tips"),
-      socials: document.getElementById("dropdown-socials"),
-    };
-
-    function closeAll() {
-      triggers.forEach((b) => b.setAttribute("aria-expanded", "false"));
-      Object.values(panelsByKey).forEach((p) => p && p.setAttribute("data-open", "false"));
-    }
-
-    function toggle(key, btn) {
-      const panel = panelsByKey[key];
-      if (!panel) return;
-      const willOpen = panel.getAttribute("data-open") !== "true";
-      closeAll();
-      if (willOpen) {
-        btn.setAttribute("aria-expanded", "true");
-        panel.setAttribute("data-open", "true");
-      }
-    }
-
-    // Click handlers
-    triggers.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const key = btn.getAttribute("data-dropdown");
-        if (!key) return;
-        e.stopPropagation();
-        toggle(key, btn);
-      });
-    });
-
-    // Close on outside click or Esc
-    document.addEventListener("click", (e) => {
-      if (!(e.target.closest && e.target.closest(".dropdown-panel")) &&
-          !(e.target.closest && e.target.closest(".dropdown-trigger"))) {
-        closeAll();
-      }
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeAll();
-    });
-  })();
-</script>
