@@ -45,7 +45,7 @@ const ogData = buildOpenGraph({
     <!-- Content Security Policy (meta) | geen frame-ancestors in meta -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' https: data:; script-src 'self'; connect-src https://16hl07csd16.nl; style-src 'self' 'unsafe-inline'"
+      content="default-src 'self'; img-src 'self' https: data:; font-src 'self' data:; script-src 'self'; connect-src https://16hl07csd16.nl; style-src 'self' 'unsafe-inline'"
     />
 
     <!-- Open Graph -->
@@ -86,7 +86,8 @@ const ogData = buildOpenGraph({
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    <script type="module" src="/scripts/image-fallback.js" defer></script>
+    <script defer src="/js/nav.js"></script>
+    <script defer src="/js/img-fallback.js"></script>
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
