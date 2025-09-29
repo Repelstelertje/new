@@ -1,14 +1,14 @@
+// Vervangt <img data-fallback-src> bij laadfout, zonder inline onerror (CSP-vriendelijk)
 document.addEventListener(
   "error",
   (e) => {
-    const el = e.target;
+    const el = e.target as HTMLElement;
     if (!(el instanceof HTMLImageElement)) return;
-    const fallback = el.getAttribute("data-fallback-src");
-    if (!fallback) return;
-    // prevent loop
+    const fb = el.getAttribute("data-fallback-src");
+    if (!fb) return;
     el.removeAttribute("data-fallback-src");
     el.srcset = "";
-    el.src = fallback;
+    el.src = fb;
   },
-  true,
+  true
 );

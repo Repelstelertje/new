@@ -127,55 +127,5 @@ const socials = [
     </nav>
   </div>
 
-  <script type="module">
-    const doc = typeof globalThis !== "undefined" && "document" in globalThis ? globalThis.document : null;
-    if (!doc) {
-      // Geen DOM beschikbaar tijdens SSR, script slaat dan over
-    } else {
-      const toggles = Array.from(doc.querySelectorAll("[data-menu-toggle]"));
-      let openId = null;
-
-      const closeAll = () => {
-        for (const btn of toggles) {
-          const id = btn.getAttribute("data-menu-toggle");
-          const panel = id ? doc.getElementById(id) : null;
-          btn.setAttribute("aria-expanded", "false");
-          panel?.classList.add("hidden");
-        }
-        openId = null;
-      };
-
-      const open = (id) => {
-        closeAll();
-        const btn = doc.querySelector(`[data-menu-toggle="${id}"]`);
-        const panel = doc.getElementById(id);
-        if (!btn || !panel) return;
-        btn.setAttribute("aria-expanded", "true");
-        panel.classList.remove("hidden");
-        openId = id;
-      };
-
-      toggles.forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          const id = btn.getAttribute("data-menu-toggle");
-          if (!id) return;
-          if (openId === id) closeAll();
-          else open(id);
-        });
-      });
-
-      doc.addEventListener("click", (e) => {
-        const target = e.target;
-        const ElementCtor = doc.defaultView?.Element;
-        if (!ElementCtor || !(target instanceof ElementCtor)) return;
-        if (target.closest("[data-menu]") || target.closest("[data-menu-toggle]")) return;
-        closeAll();
-      });
-
-      doc.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAll();
-      });
-    }
-  </script>
+  <script type="module" src="/js/nav.js" defer></script>
 </header>

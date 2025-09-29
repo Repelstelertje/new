@@ -6,21 +6,14 @@
     <title>Pagina niet gevonden</title>
     <link rel="canonical" href="https://oproepjesnederland.nl/404.html" />
     <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/styles/profile-fallback.css" />
   </head>
   <body class="bg-neutral-50 text-neutral-900">
     <main id="content" class="mx-auto max-w-5xl px-4 py-10">
-      <!-- Profile fallback mount (hidden unless route matches /daten-met-... ) -->
-      <div id="profile-view" class="profile-view"></div>
-
-      <!-- Normal 404 content (hidden when profile-fallback runs) -->
-      <section id="not-found" class="not-found">
-        <h1>Pagina niet gevonden</h1>
-        <p>De opgevraagde pagina bestaat niet. Ga terug naar de <a href="/">homepage</a>.</p>
-      </section>
+      <h1 class="text-3xl font-bold text-neutral-900">Pagina niet gevonden</h1>
+      <p class="mt-4 max-w-prose text-neutral-700">
+        De opgevraagde pagina bestaat niet. Ga terug naar de <a class="text-sky-600 underline" href="/">homepage</a> of bekijk
+        onze profielen.
+      </p>
     </main>
-
-    <!-- Client profile renderer -->
-    <script src="/js/profile-view.js" type="module"></script>
   </body>
 </html>
