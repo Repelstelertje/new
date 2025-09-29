@@ -25,18 +25,23 @@ const socials = [
 
     <nav aria-label="Hoofd navigatie">
       <ul class="flex flex-wrap items-center gap-2">
-        <li class="relative" data-dropdown data-open="false">
+        <li class="relative">
           <button
             type="button"
-            data-dropdown-toggle
+            data-menu-toggle="menu-provincies"
             aria-haspopup="true"
             aria-expanded="false"
+            aria-controls="menu-provincies"
             class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
             Provincies
             <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+          <div
+            id="menu-provincies"
+            data-menu
+            class="absolute left-0 z-50 mt-2 hidden min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md"
+          >
             <ul class="flex flex-col">
               {PROVINCES.map((province) => (
                 <li>
@@ -52,18 +57,23 @@ const socials = [
           </div>
         </li>
 
-        <li class="relative" data-dropdown data-open="false">
+        <li class="relative">
           <button
             type="button"
-            data-dropdown-toggle
+            data-menu-toggle="menu-datingtips"
             aria-haspopup="true"
             aria-expanded="false"
+            aria-controls="menu-datingtips"
             class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
             Datingtips
             <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+          <div
+            id="menu-datingtips"
+            data-menu
+            class="absolute left-0 z-50 mt-2 hidden min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md"
+          >
             <ul class="flex flex-col">
               {datingTips.map((tip) => (
                 <li>
@@ -79,18 +89,23 @@ const socials = [
           </div>
         </li>
 
-        <li class="relative" data-dropdown data-open="false">
+        <li class="relative">
           <button
             type="button"
-            data-dropdown-toggle
+            data-menu-toggle="menu-socials"
             aria-haspopup="true"
             aria-expanded="false"
+            aria-controls="menu-socials"
             class="inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
           >
             Socials
             <span aria-hidden="true" class="ml-2">▾</span>
           </button>
-          <div class="absolute left-0 z-50 mt-2 min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md" data-dropdown-menu>
+          <div
+            id="menu-socials"
+            data-menu
+            class="absolute left-0 z-50 mt-2 hidden min-w-max rounded-xl border border-neutral-200 bg-white p-2 shadow-md"
+          >
             <ul class="flex flex-col">
               {socials.map((social) => (
                 <li>
@@ -112,13 +127,55 @@ const socials = [
     </nav>
   </div>
 
-  <style>
-    [data-dropdown] [data-dropdown-menu] {
-      display: none;
-    }
+  <script type="module">
+    const doc = typeof globalThis !== "undefined" && "document" in globalThis ? globalThis.document : null;
+    if (!doc) {
+      // Geen DOM beschikbaar tijdens SSR, script slaat dan over
+    } else {
+      const toggles = Array.from(doc.querySelectorAll("[data-menu-toggle]"));
+      let openId = null;
 
-    [data-dropdown][data-open="true"] [data-dropdown-menu] {
-      display: block;
+      const closeAll = () => {
+        for (const btn of toggles) {
+          const id = btn.getAttribute("data-menu-toggle");
+          const panel = id ? doc.getElementById(id) : null;
+          btn.setAttribute("aria-expanded", "false");
+          panel?.classList.add("hidden");
+        }
+        openId = null;
+      };
+
+      const open = (id) => {
+        closeAll();
+        const btn = doc.querySelector(`[data-menu-toggle="${id}"]`);
+        const panel = doc.getElementById(id);
+        if (!btn || !panel) return;
+        btn.setAttribute("aria-expanded", "true");
+        panel.classList.remove("hidden");
+        openId = id;
+      };
+
+      toggles.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const id = btn.getAttribute("data-menu-toggle");
+          if (!id) return;
+          if (openId === id) closeAll();
+          else open(id);
+        });
+      });
+
+      doc.addEventListener("click", (e) => {
+        const target = e.target;
+        const ElementCtor = doc.defaultView?.Element;
+        if (!ElementCtor || !(target instanceof ElementCtor)) return;
+        if (target.closest("[data-menu]") || target.closest("[data-menu-toggle]")) return;
+        closeAll();
+      });
+
+      doc.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAll();
+      });
     }
-  </style>
+  </script>
 </header>

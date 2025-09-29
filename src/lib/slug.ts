@@ -6,3 +6,8 @@ export function slugifyName(name: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
+
+export function buildProfileHref(name: string, id: string | number) {
+  const slug = slugifyName(name);
+  return `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;
+}

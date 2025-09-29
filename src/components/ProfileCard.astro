@@ -1,5 +1,5 @@
 ---
-import { slugifyName } from "../lib/slug";
+import { buildProfileHref } from "../lib/slug";
 
 interface ProfileCardImage {
   src: string;
@@ -56,9 +56,9 @@ const {
   age,
   province,
   img,
-  deeplink, // blijft gebruikt op detailpagina
+  deeplink: _deeplink, // blijft gebruikt op detailpagina (CTA daar)
   description,
-  rank,
+  rank: _rank,
   slugOverride,
   city,
 } = Astro.props as {
@@ -85,11 +85,14 @@ function trim(text: string, max = 140) {
 
 const preview = description ? trim(description, 140) : "";
 
+// Props gebruikt op detailpagina; markeer als gebruikt om lint stil te houden
+void _deeplink;
+void _rank;
+
 const responsiveSrcset = ensureResponsiveSrcset(img.src, img.srcset);
 const responsiveSizes =
   img.sizes ?? "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 100vw";
-const slug = slugOverride ?? slugifyName(name);
-const internalHref = `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;
+const internalHref = buildProfileHref(slugOverride ?? name, id);
 ---
 <article
   class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-sky-500 hover:shadow-lg"
@@ -101,7 +104,7 @@ const internalHref = `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;
     class="group relative block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
   >
     <picture
-      class="block aspect-[4/3] overflow-hidden bg-slate-100"
+      class="block overflow-hidden bg-slate-100"
       style={`background-image: url('${blurDataUrl}'); background-size: cover; background-position: center;`}
     >
       <img
@@ -111,8 +114,8 @@ const internalHref = `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;
         sizes={responsiveSizes}
         loading="lazy"
         decoding="async"
-        class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        data-fallback-src="/img/fallback.svg"
+        class="block h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        data-fallback-src={"/img/fallback.svg"}
       />
     </picture>
   </a>
