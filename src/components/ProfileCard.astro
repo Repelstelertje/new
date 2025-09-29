@@ -60,6 +60,7 @@ const {
   description,
   rank,
   slugOverride,
+  city,
 } = Astro.props as {
   id: string | number;
   name: string;
@@ -70,6 +71,7 @@ const {
   description?: string;
   rank?: number;
   slugOverride?: string;
+  city?: string;
 };
 
 // helper: kort en netjes afbreken rond woordgrens
@@ -121,9 +123,7 @@ const internalHref = `/daten-met-${slug}?id=${encodeURIComponent(String(id))}`;
         Toon stad als die bekend is; anders val terug op provincie
       */}
 
-      <p class="text-sm text-slate-700">
-        {age} jaar{(Astro.props as any).city ? ` · ${(Astro.props as any).city}` : ` · ${province}`}
-      </p>
+      <p class="text-sm text-slate-700">{age} jaar · {city ?? province}</p>
     </div>
     {preview && (
       <p

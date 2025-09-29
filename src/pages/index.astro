@@ -84,7 +84,18 @@ try {
     {popularProfiles.length > 0 ? (
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {popularProfiles.map((profile, index) => (
-          <ProfileCard {...profile} key={profile.id} rank={index + 1} />
+          <ProfileCard
+            key={profile.id}
+            id={profile.id}
+            name={profile.name}
+            age={profile.age}
+            province={profile.province}
+            img={profile.img}
+            description={profile.description}
+            city={profile.city}
+            deeplink={profile.deeplink}
+            rank={index + 1}
+          />
         ))}
       </div>
     ) : (
