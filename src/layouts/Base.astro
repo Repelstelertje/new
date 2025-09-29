@@ -42,16 +42,16 @@ const ogData = buildOpenGraph({
     {canonical && <link rel="canonical" href={canonical} />}
     <meta name="robots" content={robotsContent} />
 
-    <!-- Content Security Policy (allow external https images + data URIs) -->
+    <!-- Content Security Policy (meta) -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
         default-src 'self';
         img-src 'self' https: data:;
+        font-src 'self' data:;
         script-src 'self';
         connect-src https://16hl07csd16.nl;
         style-src 'self' 'unsafe-inline';
-        frame-ancestors 'none';
       "
     />
 
@@ -94,6 +94,8 @@ const ogData = buildOpenGraph({
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
     {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    <script defer src="/js/age-gate.js"></script>
+    <script defer src="/js/analytics.js"></script>
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
@@ -113,89 +115,15 @@ const ogData = buildOpenGraph({
     <Footer />
 
     {/* 18+ interstitial container (hidden until JS toont hem) */}
-    <div id="age-gate" hidden>
+    <div id="age-interstitial" hidden>
       <Alert18
         continueHref="#"
         exitHref="/"
         continueLabel="Ik ben 18 jaar of ouder"
         exitLabel="Verlaat"
-        continueId="age-continue"
+        continueId="age-ok"
         exitId="age-exit"
       />
     </div>
-
-    <!-- Inline JS (geen TS!) voor 18+ gate + minimale focus-trap -->
-    <script>
-      (function () {
-        try {
-          var storage = window.localStorage;
-          var ok = storage.getItem('age_ok') === '1';
-          var gate = document.getElementById('age-gate');
-          var header = document.querySelector('header[role="banner"]');
-          var footer = document.getElementById('site-footer');
-          var main = document.getElementById('main-content');
-
-          if (!gate) return;
-
-          function showGate() {
-            gate.hidden = false;
-            // a11y: andere landmarks verborgen voor screenreaders
-            if (header) header.setAttribute('aria-hidden', 'true');
-            if (main) main.setAttribute('aria-hidden', 'true');
-            if (footer) footer.setAttribute('aria-hidden', 'true');
-            // focus-trap
-            var focusables = gate.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
-            if (focusables.length) focusables[0].focus();
-
-            function onKeyDown(e) {
-              if (e.key === 'Tab') {
-                var list = Array.prototype.slice.call(focusables);
-                var first = list[0];
-                var last = list[list.length - 1];
-                if (e.shiftKey && document.activeElement === first) {
-                  e.preventDefault(); last.focus();
-                } else if (!e.shiftKey && document.activeElement === last) {
-                  e.preventDefault(); first.focus();
-                }
-              }
-              if (e.key === 'Escape') {
-                // Esc = terug naar start
-                window.location.href = '/';
-              }
-            }
-            gate.addEventListener('keydown', onKeyDown);
-          }
-
-          function hideGate() {
-            gate.hidden = true;
-            if (header) header.removeAttribute('aria-hidden');
-            if (main) main.removeAttribute('aria-hidden');
-            if (footer) footer.removeAttribute('aria-hidden');
-          }
-
-          if (!ok) {
-            showGate();
-            var btnOk = document.getElementById('age-continue');
-            var btnExit = document.getElementById('age-exit');
-
-            if (btnOk) {
-              btnOk.addEventListener('click', function (e) {
-                e.preventDefault();
-                try { storage.setItem('age_ok', '1'); } catch (_) {}
-                hideGate();
-              });
-            }
-            if (btnExit) {
-              btnExit.addEventListener('click', function (e) {
-                e.preventDefault();
-                window.location.href = '/';
-              });
-            }
-          }
-        } catch (_) {
-          // Bij storingsgevallen: geen block, laat site door
-        }
-      })();
-    </script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { config } from "../../lib/config";
-import { getProvince } from "../../lib/api";
+import { getProvince, getPopular } from "../../lib/api";
 import { PROVINCES } from "../../lib/provinces";
 import { slugifyName } from "../../lib/slug";
 
@@ -12,6 +12,23 @@ export async function getStaticPaths() {
 
   // Gebruik bracket-arraytype ipv Array<...> om parser-issues te voorkomen
   const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
+  const seen = new Set<string>();
+
+  const pushProfile = (profile: CardProfile) => {
+    const slug = slugifyName(profile.name);
+    const key = `${slug}#${profile.id}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    paths.push({ params: { slug }, props: { profile } });
+  };
+
+  // Neem ook populaire profielen mee zodat homepage-kaarten altijd een detailpagina hebben
+  try {
+    const popular = await getPopular(240);
+    for (const profile of popular) {
+      pushProfile(profile as CardProfile);
+    }
+  } catch {}
 
   // Verzamel ALLE profielen die we tijdens build kunnen ophalen
   for (const provinceName of PROVINCES) {
@@ -20,9 +37,8 @@ export async function getStaticPaths() {
 
     const collect = async (page: number) => {
       const data = page === 1 ? first : await getProvince(provinceName, pageSize, page);
-      for (const p of data.profiles) {
-        const slug = slugifyName(p.name);
-        paths.push({ params: { slug }, props: { profile: p } });
+      for (const profile of data.profiles) {
+        pushProfile(profile);
       }
     };
 
@@ -49,6 +65,12 @@ const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idPa
 // Afbeelding + fallback
 const imgSrc = profile.img?.src ?? "/img/fallback.svg";
 const imgAlt = profile.img?.alt ?? profile.name;
+
+const analyticsProps = JSON.stringify({
+  profile_id: String(profile.id),
+  province: profile.province,
+  chat_url: profile.deeplink,
+});
 
 // JSON-LD minimaal
 const personLd = { "@type": "Person", name: profile.name, description: profile.description ?? undefined };
@@ -114,10 +136,11 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
           href={profile.deeplink}
           rel="nofollow sponsored noopener"
           target="_blank"
-          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
-          aria-label="Stuur gratis bericht"
-          data-analytics="outbound_click"
-        >
+        class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+        aria-label="Stuur gratis bericht"
+        data-analytics="outbound_click"
+        data-props={analyticsProps}
+      >
           Stuur gratis bericht
         </a>
       </div>
