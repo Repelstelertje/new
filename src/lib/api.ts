@@ -64,13 +64,17 @@ function debugDump(provinceSlug: string, page: number, body: string) {
 const imageSourceSchema = z
   .union([
     z.string().min(1),
-    z.object({
-      src: z.string().optional(),
-      url: z.string().optional(),
-      alt: z.string().optional(),
-      srcset: z.string().optional(),
-      sizes: z.string().optional(),
-    }).passthrough(),
+    z
+      .object({
+        src: z.string().optional(),
+        url: z.string().optional(),
+        alt: z.string().optional(),
+        srcset: z.string().optional(),
+        sizes: z.string().optional(),
+        picture_url: z.string().optional(),
+        basename: z.string().optional(),
+      })
+      .passthrough(),
   ])
   .optional();
 
@@ -116,11 +120,26 @@ export type Profile = {
   };
 };
 
-function resolveImageSource(raw: z.infer<typeof imageSourceSchema>): Profile["img"] {
-  if (!raw) return { src: FALLBACK_IMG, alt: "" };
-  if (typeof raw === "string") return { src: raw, alt: "" };
-  const src = raw.src ?? raw.url ?? FALLBACK_IMG;
-  return { src, alt: raw.alt ?? "", srcset: raw.srcset, sizes: raw.sizes };
+function resolveImageSource(
+  raw: z.infer<typeof imageSourceSchema>,
+  parent?: { picture_url?: string; basename?: string }
+): Profile["img"] {
+  if (typeof raw === "string") {
+    return { src: raw, alt: "" };
+  }
+
+  const directSrc = raw?.src ?? raw?.url;
+  const base = raw?.picture_url ?? parent?.picture_url;
+  const name = raw?.basename ?? parent?.basename;
+  const composed = base && name ? `${base.replace(/\/+$/, "")}/${name.replace(/^\/+/, "")}` : undefined;
+  const src = directSrc ?? composed ?? FALLBACK_IMG;
+
+  return {
+    src,
+    alt: raw?.alt ?? "",
+    srcset: raw?.srcset,
+    sizes: raw?.sizes,
+  };
 }
 
 function coerceNumber(n: unknown): number | undefined {
@@ -158,7 +177,11 @@ const profileSchema = rawProfileSchema.transform((raw) => {
     raw.avatar ??
     raw.picture ??
     raw.img ??
-    raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img));
+    raw.images?.find((img): img is NonNullable<typeof img> => Boolean(img)) ??
+    (raw.src ? { src: raw.src } : undefined) ??
+    ((raw.picture_url || raw.basename)
+      ? { picture_url: raw.picture_url, basename: raw.basename }
+      : undefined);
 
   // Extra velden uit API mappen
   const description =
@@ -181,7 +204,7 @@ const profileSchema = rawProfileSchema.transform((raw) => {
     height,
     description,
     deeplink: appendUtm(deeplink, raw.province, raw.id),
-    img: resolveImageSource(imageSource),
+    img: resolveImageSource(imageSource as any, { picture_url: raw.picture_url, basename: raw.basename }),
   } satisfies Profile;
 });
 

@@ -42,6 +42,19 @@ const ogData = buildOpenGraph({
     {canonical && <link rel="canonical" href={canonical} />}
     <meta name="robots" content={robotsContent} />
 
+    <!-- Content Security Policy (allow external https images + data URIs) -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        img-src 'self' https: data:;
+        script-src 'self';
+        connect-src https://16hl07csd16.nl;
+        style-src 'self' 'unsafe-inline';
+        frame-ancestors 'none';
+      "
+    />
+
     <!-- Open Graph -->
     <meta property="og:type" content={ogData.type} />
     {ogData.siteName && <meta property="og:site_name" content={ogData.siteName} />}
