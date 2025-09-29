@@ -11,7 +11,7 @@ interface Props {
   description?: string;
   path?: string;
   staging?: boolean;
-  jsonLd?: any[];
+  jsonLd?: ReadonlyArray<Record<string, unknown>>;
   og?: {
     title?: string;
     description?: string;
@@ -31,6 +31,7 @@ const ogData = buildOpenGraph({
   ...(og ?? {}),
   url: og?.url ?? canonical,
 });
+const jsonLdStrings = jsonLd.map((entry) => JSON.stringify(entry));
 ---
 <!DOCTYPE html>
 <html lang="nl">
@@ -43,16 +44,10 @@ const ogData = buildOpenGraph({
     <meta name="robots" content={robotsContent} />
 
     <!-- Content Security Policy (meta) -->
+    <!-- Note: frame-ancestors ignored in meta; allow minimal inline bootstrap via unsafe-inline + unsafe-hashes -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        img-src 'self' https: data:;
-        font-src 'self' data:;
-        script-src 'self';
-        connect-src https://16hl07csd16.nl;
-        style-src 'self' 'unsafe-inline';
-      "
+      content="default-src 'self'; img-src 'self' https: data:; script-src 'self' 'unsafe-inline' 'unsafe-hashes'; connect-src https://16hl07csd16.nl; style-src 'self' 'unsafe-inline'"
     />
 
     <!-- Open Graph -->
@@ -90,11 +85,13 @@ const ogData = buildOpenGraph({
         }
       />
     )}
+    <link rel="preload" href="/fonts/Inter-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href={fontsHref} />
     <link rel="stylesheet" href={tailwindHref} />
-    {jsonLd.map((schema) => <script type="application/ld+json">{JSON.stringify(schema)}</script>)}
+    {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+    {jsonLdStrings.map((entry) => <script type="application/ld+json">{entry}</script>)}
+    <script type="module" src="/scripts/image-fallback.js" defer></script>
     <script defer src="/js/nav.js"></script>
-    <script defer src="/js/img-fallback.js"></script>
     <script defer src="/js/age-gate.js"></script>
     <script defer src="/js/analytics.js"></script>
   </head>

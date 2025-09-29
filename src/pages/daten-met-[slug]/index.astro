@@ -1,6 +1,5 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { config } from "../../lib/config";
 import { getProvince, getPopular } from "../../lib/api";
 import { PROVINCES } from "../../lib/provinces";
 import { slugifyName } from "../../lib/slug";
@@ -8,7 +7,7 @@ import { slugifyName } from "../../lib/slug";
 type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
 
 export async function getStaticPaths() {
-  const pageSize = config.api.limits?.pageSize ?? 60;
+  const pageSize = 60;
 
   // Gebruik bracket-arraytype ipv Array<...> om parser-issues te voorkomen
   const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
@@ -28,7 +27,9 @@ export async function getStaticPaths() {
     for (const profile of popular) {
       pushProfile(profile as CardProfile);
     }
-  } catch {}
+  } catch {
+    // Fallback: als populaire profielen niet laden, gaan we verder met provincies
+  }
 
   // Verzamel ALLE profielen die we tijdens build kunnen ophalen
   for (const provinceName of PROVINCES) {
@@ -52,15 +53,17 @@ export async function getStaticPaths() {
 
 const { profile } = Astro.props as { profile: CardProfile };
 
-// Geen harde redirect meer bij query-id mismatch; render altijd.
-// We nemen id uit query op in canonical voor stabiliteit.
+// Query-id valideren (nodig voor juiste detail)
 const q = new URL(Astro.url).searchParams;
-const idParam = q.get("id") ?? String(profile.id);
+const idParam = q.get("id");
+if (!idParam || String(idParam) !== String(profile.id)) {
+  return Astro.redirect("/404.html");
+}
 
 // SEO & canonical
 const title = `Date met ${profile.name} in ${profile.province}`;
 const description = profile.description ?? `Leer ${profile.name} kennen en stuur gratis een bericht.`;
-const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idParam))}`;
+const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(profile.id))}`;
 
 // Afbeelding + fallback
 const imgSrc = profile.img?.src ?? "/img/fallback.svg";
@@ -83,8 +86,8 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
         alt={imgAlt}
         loading="eager"
         decoding="async"
-        class="block w-full h-auto"
-        data-fallback-src="/img/fallback.svg"
+        class="block h-auto w-full object-cover"
+        data-fallback-src={"/img/fallback.svg"}
       />
     </div>
 
@@ -136,11 +139,11 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
           href={profile.deeplink}
           rel="nofollow sponsored noopener"
           target="_blank"
-        class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
-        aria-label="Stuur gratis bericht"
-        data-analytics="outbound_click"
-        data-props={analyticsProps}
-      >
+          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+          aria-label="Stuur gratis bericht"
+          data-analytics="outbound_click"
+          data-props={analyticsProps}
+        >
           Stuur gratis bericht
         </a>
       </div>

@@ -17,27 +17,9 @@
     return;
   }
 
-  // Load site config to avoid hardcoding
-  let cfg;
-  try {
-    const res = await fetch('/site.config.json', { cache: 'no-store' });
-    cfg = await res.json();
-  } catch {
-    renderError('Kon configuratie niet laden.');
-    return;
-  }
-
-  const PROD_BASE = (cfg?.site?.canonicalBase || 'https://oproepjesnederland.nl').replace(/\/$/, '');
-  const API_BASE = (cfg?.api?.baseUrl || '').replace(/\/$/, '');
-  if (!API_BASE) {
-    renderError('API niet geconfigureerd.');
-    return;
-  }
-
-  // Best-guess endpoint for single profile. Prefer config override if present.
-  // Voeg desgewenst later in site.config.json toe:
-  // "endpoints": { ..., "profileById": "/profile/id/{id}" }
-  const epProfile = cfg?.api?.endpoints?.profileById || '/profile/id/{id}';
+  const PROD_BASE = 'https://oproepjesnederland.nl';
+  const API_BASE = 'https://16hl07csd16.nl';
+  const epProfile = '/profile/id/{id}';
   const profileUrl = `${API_BASE}${epProfile.replace('{id}', encodeURIComponent(String(id)))}`;
 
   // Helper: build affiliate link -> ?ref=32&source=oproepjes&subsource={id}
@@ -104,7 +86,10 @@
     name: p.name || p.title || '',
     age: Number.parseInt(p.age ?? p.leeftijd ?? 0, 10) || undefined,
     province: p.province || p.regio || p.city || '',
+    city: p.city || p.stad || '',
     description: p.aboutme || p.bio || p.description || '',
+    relationship: p.relationship || p.relationship_status || p.relatiestatus || '',
+    height: p.height || p.lengte || '',
     deeplink: withAffiliateParams(p.deeplink || p.url || '', p.id ?? id),
     img: { src: pickImage(p), alt: p.name || 'Profielafbeelding' }
   };
@@ -123,27 +108,35 @@
 
   // Render view
   if (notFound) notFound.style.display = 'none';
+  mount.classList.add('is-visible');
   mount.innerHTML = `
-    <article class="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-[320px,1fr]">
-      <div class="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+    <article class="profile-layout">
+      <div class="profile-card-image">
         <img src="${escapeHtml(profile.img.src)}" alt="${escapeHtml(profile.img.alt)}"
-             class="block h-auto w-full object-cover"
-             onerror="this.onerror=null;this.src='/img/fallback.svg'"/>
+             class="profile-img"
+             data-fallback-src="/img/fallback.svg" />
       </div>
-      <div class="space-y-4">
-        <header>
-          <h1 class="text-3xl font-bold text-neutral-900">${escapeHtml(profile.name)}</h1>
-          <p class="text-neutral-700">
-            ${profile.age ? escapeHtml(String(profile.age)) + ' jaar · ' : ''}${escapeHtml(profile.province)}
-          </p>
+      <div class="profile-card-body">
+        <header class="profile-header">
+          <h1>${escapeHtml(profile.name)}</h1>
+          <p>${profile.age ? escapeHtml(String(profile.age)) + ' jaar · ' : ''}${escapeHtml(profile.province)}</p>
         </header>
-        ${profile.description ? `<p class="text-neutral-800 leading-relaxed">${escapeHtml(trim(profile.description, 400))}</p>` : ''}
-        <div class="pt-2">
+        ${profile.description ? `<p class="profile-description">${escapeHtml(trim(profile.description, 400))}</p>` : ''}
+        <section class="profile-meta">
+          <div class="profile-meta-item">
+            <p class="profile-meta-label">Provincie</p>
+            <p class="profile-meta-value">${escapeHtml(profile.province)}</p>
+          </div>
+          ${profile.city ? `<div class="profile-meta-item"><p class="profile-meta-label">Stad</p><p class="profile-meta-value">${escapeHtml(profile.city)}</p></div>` : ''}
+          ${profile.age ? `<div class="profile-meta-item"><p class="profile-meta-label">Leeftijd</p><p class="profile-meta-value">${escapeHtml(String(profile.age))}</p></div>` : ''}
+          ${profile.relationship ? `<div class="profile-meta-item"><p class="profile-meta-label">Relatiestatus</p><p class="profile-meta-value">${escapeHtml(profile.relationship)}</p></div>` : ''}
+          ${profile.height ? `<div class="profile-meta-item"><p class="profile-meta-label">Lengte</p><p class="profile-meta-value">${escapeHtml(profile.height)}</p></div>` : ''}
+        </section>
+        <div class="profile-cta">
           <a id="send-msg-btn"
              href="${escapeHtml(profile.deeplink)}"
              rel="nofollow sponsored noopener"
              target="_blank"
-             class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
              aria-label="Stuur gratis bericht">
             Stuur gratis bericht
           </a>
