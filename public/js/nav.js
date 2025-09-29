@@ -1,50 +1,43 @@
-(function () {
-  const openAttr = "data-open";
-  const toggleSelector = "[data-dropdown-toggle]";
+/** Eenvoudige dropdown-controller: 1 tegelijk open, sluit bij klik buiten/ESC. */
+(() => {
+  const doc = document;
+  const toggles = Array.from(doc.querySelectorAll<HTMLButtonElement>("[data-menu-toggle]"));
+  let openId: string | null = null;
 
-  function setExpanded(toggle, expanded) {
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+  function closeAll() {
+    for (const btn of toggles) {
+      const id = btn.getAttribute("data-menu-toggle");
+      const panel = id ? doc.getElementById(id) : null;
+      btn.setAttribute("aria-expanded", "false");
+      panel?.classList.add("hidden");
     }
+    openId = null;
   }
-
-  function closeAll(except) {
-    document.querySelectorAll(`[data-dropdown][${openAttr}="true"]`).forEach((el) => {
-      if (!except || el !== except) {
-        el.setAttribute(openAttr, "false");
-        const toggle = el.querySelector(toggleSelector);
-        setExpanded(toggle, false);
-      }
+  function open(id: string) {
+    closeAll();
+    const btn = doc.querySelector<HTMLButtonElement>(`[data-menu-toggle="${id}"]`);
+    const panel = doc.getElementById(id);
+    if (!btn || !panel) return;
+    btn.setAttribute("aria-expanded", "true");
+    panel.classList.remove("hidden");
+    openId = id;
+  }
+  toggles.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute("data-menu-toggle");
+      if (!id) return;
+      if (openId === id) closeAll();
+      else open(id);
     });
-  }
-
-  document.addEventListener("click", (event) => {
-    const toggle = event.target.closest?.(toggleSelector);
-    if (toggle) {
-      const dropdown = toggle.closest?.("[data-dropdown]");
-      if (!dropdown) return;
-      const isOpen = dropdown.getAttribute(openAttr) === "true";
-      closeAll(dropdown);
-      dropdown.setAttribute(openAttr, isOpen ? "false" : "true");
-      setExpanded(toggle, !isOpen);
-      return;
-    }
-
-    if (!event.target.closest?.("[data-dropdown]")) {
-      closeAll();
-    }
   });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeAll();
-    }
+  doc.addEventListener("click", (e) => {
+    const t = e.target as Element | null;
+    if (!t) return;
+    if (t.closest("[data-menu]") || t.closest("[data-menu-toggle]")) return;
+    closeAll();
   });
-
-  document.addEventListener("click", (event) => {
-    const link = event.target.closest?.("[data-dropdown] a");
-    if (link) {
-      closeAll();
-    }
+  doc.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAll();
   });
 })();

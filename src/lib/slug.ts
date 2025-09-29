@@ -7,6 +7,7 @@ export function slugifyName(name: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+/** Bouw de canonieke interne profiel-URL, altijd met trailing slash. */
 export function buildProfileHref(name: string, id: string | number) {
   const slug = slugifyName(name);
   return `/daten-met-${slug}/?id=${encodeURIComponent(String(id))}`;

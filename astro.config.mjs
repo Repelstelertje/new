@@ -29,6 +29,6 @@ const robotsIntegration = {
 
 export default defineConfig({
   site: siteConfig.site?.canonicalBase ?? "https://placeholder.example.com",
-  trailingSlash: "always",
+  trailingSlash: 'always',
   integrations: [tailwind(), robotsIntegration],
 });

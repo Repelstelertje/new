@@ -190,9 +190,10 @@ const profileSchema = rawProfileSchema.transform((raw) => {
     (raw as any).bio ??
     undefined;
 
-  const city = (raw as any).city ?? undefined;
-  const relationship = (raw as any).relationship ?? undefined;
-  const height = (raw as any).length ?? undefined;
+  const city = (raw as any).city ?? (raw as any).stad;
+  const relationship =
+    (raw as any).relationship ?? (raw as any).relatiestatus ?? (raw as any).relationship_status;
+  const height = (raw as any).height ?? (raw as any).lengte;
 
   return {
     id: String(raw.id),

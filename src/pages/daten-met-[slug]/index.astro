@@ -3,17 +3,16 @@ import Base from "../../layouts/Base.astro";
 import { getProvince, getPopular } from "../../lib/api";
 import { PROVINCES } from "../../lib/provinces";
 import { slugifyName } from "../../lib/slug";
+import { config } from "../../lib/config";
 
 type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
 
 export async function getStaticPaths() {
-  const pageSize = 60;
-
-  // Gebruik bracket-arraytype ipv Array<...> om parser-issues te voorkomen
+  const pageSize = config.api.limits?.pageSize ?? 60;
   const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
   const seen = new Set<string>();
 
-  const pushProfile = (profile: CardProfile) => {
+  const push = (profile: CardProfile) => {
     const slug = slugifyName(profile.name);
     const key = `${slug}#${profile.id}`;
     if (seen.has(key)) return;
@@ -21,26 +20,19 @@ export async function getStaticPaths() {
     paths.push({ params: { slug }, props: { profile } });
   };
 
-  // Neem ook populaire profielen mee zodat homepage-kaarten altijd een detailpagina hebben
+  // Neem ook populaire profielen mee (voor homepage-kaarten)
   try {
     const popular = await getPopular(240);
-    for (const profile of popular) {
-      pushProfile(profile as CardProfile);
-    }
-  } catch {
-    // Fallback: als populaire profielen niet laden, gaan we verder met provincies
-  }
+    for (const p of popular) push(p as CardProfile);
+  } catch {}
 
-  // Verzamel ALLE profielen die we tijdens build kunnen ophalen
   for (const provinceName of PROVINCES) {
     const first = await getProvince(provinceName, pageSize, 1);
     const totalPages = first.totalPages ?? 1;
 
     const collect = async (page: number) => {
       const data = page === 1 ? first : await getProvince(provinceName, pageSize, page);
-      for (const profile of data.profiles) {
-        pushProfile(profile);
-      }
+      for (const profile of data.profiles) push(profile);
     };
 
     for (let page = 1; page <= totalPages; page++) {
@@ -87,14 +79,14 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
         loading="eager"
         decoding="async"
         class="block h-auto w-full object-cover"
-        data-fallback-src={"/img/fallback.svg"}
+        data-fallback-src="/img/fallback.svg"
       />
     </div>
 
     <div class="space-y-4">
       <header>
         <h1 class="text-3xl font-bold text-neutral-900">{profile.name}</h1>
-        <p class="text-neutral-700">{profile.age} jaar · {profile.province}</p>
+        <p class="text-neutral-700">{profile.age} jaar · {profile.city ?? profile.province}</p>
       </header>
 
       {profile.description && (
