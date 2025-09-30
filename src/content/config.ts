@@ -3,7 +3,7 @@ import { defineCollection, z } from "astro:content";
 const tipSchema = z.object({
   title: z.string(),
   type: z.enum(["general","city"]),
-  slug: z.string().optional(),
+  // slug is reserved by Astro; do not put it in the schema
   metaDescription: z.string().min(120).max(180),
   intro: z.string().min(100), // we valideren globaal; niet hard op 250
   city: z.string().optional(),

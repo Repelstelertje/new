@@ -1,7 +1,6 @@
 ---
-title: "Veilig daten"
+title: "Datingtips Veilig daten"
 type: "general"
-slug: "veilig-daten"
 metaDescription: "Leer hoe je veilig online date: van profielcontrole en afspreken op openbare plekken tot privacy en grenzen aangeven — altijd 18+ en verantwoord."
 intro: |
   Online daten is leuk en laagdrempelig, maar veiligheid gaat altijd voor. In deze gids krijg je praktische tips om verantwoord te daten: hoe je profielen slim beoordeelt, veilig het eerste contact legt en duidelijke grenzen bewaakt. We bespreken signalen waarop je kunt letten, manieren om je privacy te beschermen en hoe je afspraken maakt op plekken waar jij je prettig voelt. Met een paar eenvoudige gewoontes vergroot je het plezier én verklein je de risico’s. Zo hou je het leuk, respectvol en 18+.
