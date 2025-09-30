@@ -1,7 +1,6 @@
 ---
-title: "Het eerste bericht"
+title: "Datingtips Het eerste bericht"
 type: "general"
-slug: "het-eerste-bericht"
 metaDescription: "Zo schrijf je een eerste bericht dat opvalt: kort, positief en persoonlijk. Tips voor openingszinnen, vervolgvragen en toon — zonder clichés."
 intro: |
   Het eerste bericht zet de toon. Houd het kort, positief en persoonlijk: verwijs naar iets uit iemands profiel, stel een open vraag en vermijd generieke zinnen. In deze gids vind je praktische voorbeelden, do’s & don’ts en manieren om het gesprek natuurlijk op te starten. Zo vergroot je je kans op een leuke reactie en een fijn vervolg.

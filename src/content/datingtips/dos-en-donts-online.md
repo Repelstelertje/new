@@ -1,7 +1,6 @@
 ---
-title: "Do’s en don’ts online"
+title: "Datingtips Do’s en Don’ts online"
 type: "general"
-slug: "dos-en-donts-online"
 metaDescription: "De belangrijkste do’s en don’ts voor online daten: eerlijk zijn, grenzen respecteren, scammen herkennen en veilig afspreken — 18+ en verantwoord."
 intro: |
   Met een paar heldere do’s en don’ts voorkom je gedoe en houd je online daten leuk. We behandelen respectvolle communicatie, grenzen en consent, het herkennen van rode vlaggen en hoe je soepel van chat naar afspreken gaat. Zo date je slimmer, relaxter en veiliger.
