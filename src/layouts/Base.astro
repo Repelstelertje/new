@@ -88,6 +88,9 @@ const ogData = buildOpenGraph({
     <link rel="stylesheet" href={tailwindHref} />
     <script defer src="/js/nav.js"></script>
     <script defer src="/js/img-fallback.js"></script>
+    {/* 18+ interstitial en analytics waren dode assets; nu actief laden */}
+    <script defer src="/js/age-gate.js"></script>
+    <script defer src="/js/analytics.js"></script>
   </head>
   <body class="flex min-h-screen flex-col bg-neutral-50 text-neutral-900">
     <a
