@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { config } from "../lib/config";
 import { PROVINCES, provinceToSlug } from "../lib/provinces";
 import { getProvince } from "../lib/api";
+import { CITIES } from "../lib/cities";
 
 export const prerender = true;
 
@@ -26,6 +27,10 @@ export const GET: APIRoute = async () => {
   const urls: Array<{ loc: string; priority: string }> = [
     { loc: absoluteUrl(baseUrl, "/"), priority: HOME_PRIORITY },
     { loc: absoluteUrl(baseUrl, "/dating-nederland/"), priority: PROVINCE_PRIORITY },
+    { loc: absoluteUrl(baseUrl, "/datingtips-nederland/"), priority: PROVINCE_PRIORITY },
+    { loc: absoluteUrl(baseUrl, "/datingtips/veilig-daten/"), priority: PROVINCE_PRIORITY },
+    { loc: absoluteUrl(baseUrl, "/datingtips/het-eerste-bericht/"), priority: PROVINCE_PRIORITY },
+    { loc: absoluteUrl(baseUrl, "/datingtips/dos-en-donts-online/"), priority: PROVINCE_PRIORITY },
   ];
 
   const provinceEntries = await Promise.all(
@@ -45,6 +50,12 @@ export const GET: APIRoute = async () => {
       const pagePath = `${basePath}page/${page}/`;
       urls.push({ loc: absoluteUrl(baseUrl, pagePath), priority: PAGINATED_PRIORITY });
     }
+  }
+
+  // Datingtips per stad
+  for (const city of CITIES) {
+    const cityPath = `/datingtips/${city.slug}/`;
+    urls.push({ loc: absoluteUrl(baseUrl, cityPath), priority: PROVINCE_PRIORITY });
   }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n` +

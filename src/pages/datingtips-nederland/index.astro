@@ -1,70 +1,37 @@
 ---
-// src/pages/datingtips-nederland/index.astro
 import Base from "../../layouts/Base.astro";
-import { jsonld } from "../../lib/seo";
+import { CITIES } from "../../lib/cities";
 
-// (Later uitbreidbaar)
-const TIPS = [
-  {
-    title: "Veilig daten (18+)",
-    href: "/datingtips/veilig-daten/",
-    description: "Praktische veiligheidsrichtlijnen voor verantwoord daten.",
-  },
-  {
-    title: "Het eerste bericht",
-    href: "/datingtips/het-eerste-bericht/",
-    description: "Zo schrijf je een leuk, oprecht én effectief openingsbericht.",
-  },
-  {
-    title: "Afspreken: do’s & don’ts",
-    href: "/datingtips/afspreken-dos-donts/",
-    description: "Checklist voor je eerste (en volgende) date.",
-  },
-];
-
-// SEO
-const title = "Datingtips in Nederland | OproepjesNederland";
-const description = "Overzicht van onze belangrijkste datingtips voor 18+ bezoekers.";
-const path = "/datingtips-nederland/";
-
-// JSON-LD ItemList
-const itemList = jsonld("ItemList", {
-  name: "Datingtips overzicht",
-  itemListElement: TIPS.map((tip, i) => ({
-    "@type": "ListItem",
-    position: i + 1,
-    name: tip.title,
-    url: tip.href,
-    description: tip.description,
-  })),
-});
+const title = "Datingtips voor Nederland – algemeen & per stad";
+const description = "Lees onze algemene datingtips en ontdek praktische tips per stad. Start veilig en slim met daten (18+).";
 ---
-<Base title={title} description={description} path={path} staging={import.meta.env.STAGING} jsonLd={[itemList]}>
-  <section class="mx-auto max-w-5xl space-y-6">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-bold text-neutral-900">Datingtips in Nederland</h1>
-      <p class="text-neutral-700">
-        Leer slimmer, veiliger en leuker daten met onze praktische 18+ tips.
-      </p>
-    </div>
+<Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {TIPS.map((tip) => (
-        <a
-          href={tip.href}
-          class="group flex h-full flex-col justify-between rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:border-accent hover:shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          aria-label={`Lees: ${tip.title}`}
-        >
-          <div class="space-y-2">
-            <h2 class="text-lg font-semibold text-neutral-900 group-hover:text-accent">{tip.title}</h2>
-            <p class="text-sm text-neutral-700">{tip.description}</p>
-          </div>
-          <span class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-            Lees tip
-            <span aria-hidden="true">→</span>
-          </span>
-        </a>
-      ))}
-    </div>
-  </section>
+<header class="mb-6">
+<h1 class="text-3xl font-bold text-neutral-900">Datingtips in Nederland</h1>
+<p class="text-neutral-700">Algemene gidsen én tips per stad. Later vullen we deze pagina’s met uitgebreidere content.</p>
+</header>
+<section class="space-y-3">
+<h2 class="text-xl font-semibold">Algemene tips</h2>
+<ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+ <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/veilig-daten/">Veilig daten (18+)</a></li>
+
+ <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/het-eerste-bericht/">Het eerste bericht</a></li>
+
+ <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/dos-en-donts-online/">Do’s & don’ts online</a></li>
+
+</ul>
+</section>
+<section class="mt-8 space-y-3">
+<h2 class="text-xl font-semibold">Tips per stad</h2>
+<ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+ {CITIES.map((c) => (
+
+   <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={`/datingtips/${c.slug}/`}>Datingtips {c.city}</a></li>
+
+ ))}
+
+</ul>
+</section>
+
 </Base>
