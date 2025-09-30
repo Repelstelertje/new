@@ -1,0 +1,69 @@
+---
+import Base from "../../../layouts/Base.astro";
+import ProfileCard from "../../../components/ProfileCard.astro";
+import { CITIES } from "../../../lib/cities";
+import { getProvince } from "../../../lib/api";
+
+type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
+
+export async function getStaticPaths() {
+
+const paths: { params: { city: string }; props: { city: string; province: string; profiles: CardProfile[] } }[] = [];
+
+for (const c of CITIES) {
+
+// haal max 60 uit provincie; filter op citynaam; fallback op provincie als er < 6 matches zijn
+
+let all: CardProfile[] = [];
+
+try {
+
+const data = await getProvince(c.province, 60, 1);
+
+all = data.profiles ?? [];
+
+} catch (error) {
+
+all = [];
+
+}
+
+const matches = all.filter((p) => (p.city ?? "").toLowerCase() === c.city.toLowerCase());
+
+const pick = (matches.length >= 6 ? matches : all).slice(0, 6);
+
+paths.push({ params: { city: c.slug }, props: { city: c.city, province: c.province, profiles: pick } });
+
+}
+
+return paths;
+}
+
+const { city, province, profiles } = Astro.props as { city: string; province: string; profiles: CardProfile[] };
+const title = `Datingtips ${city} – slim daten in ${city}`;
+const description = `Handige datingtips voor ${city}. Lees de basis en bekijk voorbeelden van profielen uit ${province}.`;
+---
+<Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+
+<header class="mb-6">
+<h1 class="text-3xl font-bold text-neutral-900">Datingtips {city}</h1>
+<p class="text-neutral-700">Hier volgt later uitgebreide content over daten in {city}. Ondertussen alvast een paar profielen uit {province}.</p>
+</header>
+
+{profiles.length > 0 ? (
+
+<section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+ {profiles.map((p, idx) => (
+
+   <ProfileCard {...p} rank={idx + 1} />
+
+ ))}
+
+</section>
+
+) : (
+
+<p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar uit {province}.</p>
+
+)}
+</Base>
