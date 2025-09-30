@@ -1,19 +1,10 @@
 ---
-const provinces = [
-  'Drenthe','Flevoland','Friesland','Gelderland','Groningen',
-  'Limburg','Noord-Brabant','Noord-Holland','Overijssel',
-  'Utrecht','Zeeland','Zuid-Holland',
-];
-
-const slug = (v: string) =>
-  v.toLowerCase().normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+import { PROVINCES, provinceToSlug } from "@/lib/provinces";
 ---
 <section class="mx-auto max-w-6xl px-4">
   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-    {provinces.map((p) => {
-      const href = `/dating-${slug(p)}/`;
+    {PROVINCES.map((p) => {
+      const href = `/dating-${provinceToSlug(p)}/`;
       return (
         <a
           href={href}
