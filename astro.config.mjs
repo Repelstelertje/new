@@ -31,4 +31,11 @@ export default defineConfig({
   site: siteConfig.site?.canonicalBase ?? "https://placeholder.example.com",
   trailingSlash: 'always',
   integrations: [tailwind(), robotsIntegration],
+  vite: {
+    resolve: {
+      alias: {
+        "@": new URL("./src", import.meta.url).pathname,
+      },
+    },
+  },
 });
