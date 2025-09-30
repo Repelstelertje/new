@@ -1,75 +1,87 @@
 ---
-import Base from "../../../layouts/Base.astro";
-import ProfileCard from "../../../components/ProfileCard.astro";
-import CTA from "../../../components/CTA.astro";
-import { getPopular, getProvince } from "../../../lib/api";
-import { getCollection, getEntry } from "astro:content";
+import Layout from "@/layouts/Base.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import ProfileCard from "@/components/ProfileCard.astro";
+import CTA from "@/components/CTA.astro";
+import { getPopular, getProvince } from "@/lib/api";
+import { getCollection, getEntryBySlug } from "astro:content";
 
 type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
-
-type StaticPath = {
-  params: { slug: string };
-  props: { id: string };
-};
 
 export async function getStaticPaths() {
   const entries = await getCollection("datingtips", (entry) => entry.data.type === "general");
 
-  return entries.map((entry) => {
-    const slug = entry.slug ?? entry.id.split("/").pop() ?? entry.id;
-    return { params: { slug }, props: { id: entry.id } } satisfies StaticPath;
-  });
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+  }));
 }
 
-const { id } = Astro.props as { id: string };
-const entry = await getEntry("datingtips", id);
-const rendered = await entry.render();
-const Content = rendered.Content;
+const { slug } = Astro.params as { slug: string };
+const entry = await getEntryBySlug("datingtips", slug);
+
+if (!entry) {
+  throw new Error(`Datingtip not found: ${slug}`);
+}
+
+const { Content } = await entry.render();
 const data = entry.data;
 
 let profiles: CardProfile[] = [];
 
 try {
-  if (data.profiles.source === "province" && data.province) {
+  if (data.profiles?.source === "province" && data.province) {
     const provinceData = await getProvince(data.province, data.profiles.limit, 1);
     profiles = provinceData.profiles ?? [];
-  } else {
+  } else if (data.profiles) {
     const popularData = await getPopular(data.profiles.limit);
     profiles = popularData ?? [];
+  } else {
+    profiles = [];
   }
 } catch (error) {
   profiles = [];
 }
 
-const title = data.title;
-const description = data.metaDescription;
-const intro = data.intro;
-const cta = data.cta;
+const breadcrumbItems = [
+  { label: "Home", href: "/" },
+  { label: data.title },
+];
 ---
-<Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+<Layout
+  title={data.title}
+  description={data.metaDescription}
+  path={Astro.url.pathname}
+  staging={import.meta.env.STAGING}
+>
+  <Breadcrumbs items={breadcrumbItems} />
+
   <header class="mb-8 space-y-4">
-    <h1 class="text-3xl font-bold text-neutral-900">{title}</h1>
-    <p class="text-neutral-700">{intro}</p>
+    <h1 class="text-3xl font-bold text-neutral-900">{data.title}</h1>
+    {data.intro && <p class="text-neutral-700">{data.intro}</p>}
   </header>
 
   <article class="prose max-w-none prose-p:text-neutral-800 prose-headings:text-neutral-900">
     <Content />
   </article>
 
-  <section class="mt-10 space-y-4">
-    <h2 class="text-2xl font-semibold text-neutral-900">Voorbeeldprofielen</h2>
-    {profiles.length > 0 ? (
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {profiles.map((p, idx) => (
-          <ProfileCard {...p} rank={idx + 1} />
-        ))}
-      </div>
-    ) : (
-      <p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar.</p>
-    )}
-  </section>
+  {data.profiles && (
+    <section class="mt-10 space-y-4">
+      <h2 class="text-2xl font-semibold text-neutral-900">Voorbeeldprofielen</h2>
+      {profiles.length > 0 ? (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {profiles.map((profile, index) => (
+            <ProfileCard {...profile} rank={index + 1} />
+          ))}
+        </div>
+      ) : (
+        <p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar.</p>
+      )}
+    </section>
+  )}
 
-  <div class="mt-10">
-    <CTA href={cta.href} label={cta.label} />
-  </div>
-</Base>
+  {data.cta && (
+    <div class="mt-10">
+      <CTA href={data.cta.href} label={data.cta.label} />
+    </div>
+  )}
+</Layout>
