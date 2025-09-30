@@ -1,9 +1,31 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { CITIES } from "../../lib/cities";
+import { getCollection } from "astro:content";
 
 const title = "Datingtips voor Nederland – algemeen & per stad";
 const description = "Lees onze algemene datingtips en ontdek praktische tips per stad. Start veilig en slim met daten (18+).";
+const tips = await getCollection("datingtips");
+
+const findTipForHref = (href: string) => {
+  const normalized = href.replace(/^\/+|\/+$/g, "");
+  const segments = normalized.split("/");
+  const slug = segments[segments.length - 1];
+  const routeSlug = normalized.replace(/\//g, "-");
+
+  return tips.find((tip) => {
+    const matchesSlug = [slug, routeSlug].some((candidate) =>
+      candidate ? tip.slug === candidate : false,
+    );
+    const matchesId = [slug, routeSlug].some((candidate) =>
+      candidate
+        ? tip.id === candidate || tip.id.endsWith(`/${candidate}`)
+        : false,
+    );
+
+    return matchesSlug || matchesId;
+  });
+};
 ---
 <Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
 
@@ -14,22 +36,90 @@ const description = "Lees onze algemene datingtips en ontdek praktische tips per
 <section class="space-y-3">
 <h2 class="text-xl font-semibold">Algemene tips</h2>
 <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
- <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/veilig-daten/">Veilig daten (18+)</a></li>
+ <li>
+   {(() => {
+     const href = "/datingtips/veilig-daten/";
+     const tip = findTipForHref(href);
+     return (
+       <a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={href}>
+         <span class="block font-semibold text-neutral-900">Veilig daten (18+)</span>
+         {tip && (
+           <span
+             class="mt-2 block text-sm text-neutral-600"
+             style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+           >
+             {tip.data.metaDescription}
+           </span>
+         )}
+       </a>
+     );
+   })()}
+ </li>
 
- <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/het-eerste-bericht/">Het eerste bericht</a></li>
+ <li>
+   {(() => {
+     const href = "/datingtips/het-eerste-bericht/";
+     const tip = findTipForHref(href);
+     return (
+       <a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={href}>
+         <span class="block font-semibold text-neutral-900">Het eerste bericht</span>
+         {tip && (
+           <span
+             class="mt-2 block text-sm text-neutral-600"
+             style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+           >
+             {tip.data.metaDescription}
+           </span>
+         )}
+       </a>
+     );
+   })()}
+ </li>
 
- <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href="/datingtips/dos-en-donts-online/">Do’s & don’ts online</a></li>
+ <li>
+   {(() => {
+     const href = "/datingtips/dos-en-donts-online/";
+     const tip = findTipForHref(href);
+     return (
+       <a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={href}>
+         <span class="block font-semibold text-neutral-900">Do’s & don’ts online</span>
+         {tip && (
+           <span
+             class="mt-2 block text-sm text-neutral-600"
+             style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+           >
+             {tip.data.metaDescription}
+           </span>
+         )}
+       </a>
+     );
+   })()}
+ </li>
 
 </ul>
 </section>
 <section class="mt-8 space-y-3">
 <h2 class="text-xl font-semibold">Tips per stad</h2>
 <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
- {CITIES.map((c) => (
-
-   <li><a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={`/datingtips/${c.slug}/`}>Datingtips {c.city}</a></li>
-
- ))}
+ {CITIES.map((c) => {
+   const href = `/datingtips/${c.slug}/`;
+   const tip = findTipForHref(href);
+   return (
+     <li>
+       <a class="block rounded-xl border border-neutral-200 bg-white p-4 hover:border-sky-500" href={href}>
+         <span class="block font-semibold text-neutral-900">Datingtips {c.city}</span>
+         {tip && (
+           <span
+             class="mt-2 block text-sm text-neutral-600"
+             style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;"
+           >
+             {tip.data.metaDescription}
+           </span>
+         )}
+       </a>
+     </li>
+   );
+ })}
 
 </ul>
 </section>

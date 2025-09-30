@@ -1,69 +1,136 @@
 ---
 import Base from "../../../layouts/Base.astro";
 import ProfileCard from "../../../components/ProfileCard.astro";
+import CTA from "../../../components/CTA.astro";
 import { CITIES } from "../../../lib/cities";
-import { getProvince } from "../../../lib/api";
+import { getProvince, getPopular } from "../../../lib/api";
+import { getCollection, getEntry } from "astro:content";
 
 type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
 
+type StaticPath = {
+  params: { city: string };
+  props: { city: string; province: string; profiles: CardProfile[] };
+};
+
 export async function getStaticPaths() {
+  const paths: StaticPath[] = [];
 
-const paths: { params: { city: string }; props: { city: string; province: string; profiles: CardProfile[] } }[] = [];
+  for (const c of CITIES) {
+    let all: CardProfile[] = [];
 
-for (const c of CITIES) {
+    try {
+      const data = await getProvince(c.province, 60, 1);
+      all = data.profiles ?? [];
+    } catch (error) {
+      all = [];
+    }
 
-// haal max 60 uit provincie; filter op citynaam; fallback op provincie als er < 6 matches zijn
+    const matches = all.filter((p) => (p.city ?? "").toLowerCase() === c.city.toLowerCase());
+    const pick = (matches.length >= 6 ? matches : all).slice(0, 6);
 
-let all: CardProfile[] = [];
+    paths.push({ params: { city: c.slug }, props: { city: c.city, province: c.province, profiles: pick } });
+  }
 
-try {
-
-const data = await getProvince(c.province, 60, 1);
-
-all = data.profiles ?? [];
-
-} catch (error) {
-
-all = [];
-
-}
-
-const matches = all.filter((p) => (p.city ?? "").toLowerCase() === c.city.toLowerCase());
-
-const pick = (matches.length >= 6 ? matches : all).slice(0, 6);
-
-paths.push({ params: { city: c.slug }, props: { city: c.city, province: c.province, profiles: pick } });
-
-}
-
-return paths;
+  return paths;
 }
 
 const { city, province, profiles } = Astro.props as { city: string; province: string; profiles: CardProfile[] };
-const title = `Datingtips ${city} – slim daten in ${city}`;
-const description = `Handige datingtips voor ${city}. Lees de basis en bekijk voorbeelden van profielen uit ${province}.`;
+const citySlug = Astro.params.city ?? "";
+const routeSlug = `datingtips-${citySlug}`;
+const collection = await getCollection("datingtips");
+type DatingTipEntry = (typeof collection)[number];
+
+const matchBySlug = (entry: DatingTipEntry, candidate: string) =>
+  candidate
+    ? entry.slug === candidate || entry.id === candidate || entry.id.endsWith(`/${candidate}`)
+    : false;
+
+let matched = collection.find((entry) => matchBySlug(entry, routeSlug) || matchBySlug(entry, citySlug));
+
+if (!matched) {
+  matched = collection.find((entry) => entry.data.city?.toLowerCase() === city.toLowerCase());
+}
+
+let Content: Awaited<ReturnType<DatingTipEntry["render"]>>["Content"] | undefined;
+let contentTitle = `Datingtips ${city} – slim daten in ${city}`;
+let contentDescription = `Handige datingtips voor ${city}. Lees de basis en bekijk voorbeelden van profielen uit ${province}.`;
+let intro: string | undefined;
+let pageProfiles: CardProfile[] = profiles;
+let cta: { label: string; href: string } | undefined;
+
+if (matched) {
+  const entry = await getEntry("datingtips", matched.id);
+  const rendered = await entry.render();
+  Content = rendered.Content;
+
+  contentTitle = entry.data.title;
+  contentDescription = entry.data.metaDescription;
+  intro = entry.data.intro;
+  cta = entry.data.cta;
+
+  try {
+    if (entry.data.profiles.source === "province" && entry.data.province) {
+      const provinceData = await getProvince(entry.data.province, entry.data.profiles.limit, 1);
+      pageProfiles = provinceData.profiles ?? [];
+    } else {
+      const popularData = await getPopular(entry.data.profiles.limit);
+      pageProfiles = popularData ?? [];
+    }
+  } catch (error) {
+    pageProfiles = [];
+  }
+}
 ---
-<Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+<Base title={contentTitle} description={contentDescription} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+  {matched && Content ? (
+    <>
+      <header class="mb-8 space-y-4">
+        <h1 class="text-3xl font-bold text-neutral-900">{contentTitle}</h1>
+        {intro && <p class="text-neutral-700">{intro}</p>}
+      </header>
 
-<header class="mb-6">
-<h1 class="text-3xl font-bold text-neutral-900">Datingtips {city}</h1>
-<p class="text-neutral-700">Hier volgt later uitgebreide content over daten in {city}. Ondertussen alvast een paar profielen uit {province}.</p>
-</header>
+      <article class="prose max-w-none prose-p:text-neutral-800 prose-headings:text-neutral-900">
+        <Content />
+      </article>
 
-{profiles.length > 0 ? (
+      <section class="mt-10 space-y-4">
+        <h2 class="text-2xl font-semibold text-neutral-900">Voorbeeldprofielen</h2>
+        {pageProfiles.length > 0 ? (
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {pageProfiles.map((p, idx) => (
+              <ProfileCard {...p} rank={idx + 1} />
+            ))}
+          </div>
+        ) : (
+          <p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar.</p>
+        )}
+      </section>
 
-<section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
- {profiles.map((p, idx) => (
+      {cta && (
+        <div class="mt-10">
+          <CTA href={cta.href} label={cta.label} />
+        </div>
+      )}
+    </>
+  ) : (
+    <>
+      <header class="mb-6">
+        <h1 class="text-3xl font-bold text-neutral-900">Datingtips {city}</h1>
+        <p class="text-neutral-700">
+          Hier volgt later uitgebreide content over daten in {city}. Ondertussen alvast een paar profielen uit {province}.
+        </p>
+      </header>
 
-   <ProfileCard {...p} rank={idx + 1} />
-
- ))}
-
-</section>
-
-) : (
-
-<p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar uit {province}.</p>
-
-)}
+      {profiles.length > 0 ? (
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {profiles.map((p, idx) => (
+            <ProfileCard {...p} rank={idx + 1} />
+          ))}
+        </section>
+      ) : (
+        <p class="text-neutral-700">Er zijn op dit moment geen profielen beschikbaar uit {province}.</p>
+      )}
+    </>
+  )}
 </Base>
