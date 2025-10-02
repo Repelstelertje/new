@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import ProfileCard from "../components/ProfileCard.astro";
 import Pagination from "../components/Pagination.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildTitle, buildDescription, jsonld } from "../lib/seo";
 import type { Profile } from "../lib/api";
 
@@ -56,6 +57,13 @@ const itemListSchema = jsonld("ItemList", {
   og={{ /* laat defaults werken; image valt terug op /og/default.jpg */ }}
 >
   <section class="space-y-6">
+    <Breadcrumbs
+      items={[
+        { href: "/", label: "Home" },
+        { href: "/dating-nederland/", label: "Nederland" },
+        { href: `/dating-${slug}/`, label: provinceName },
+      ]}
+    />
     <div class="space-y-2">
       <h1 class="text-3xl font-bold text-neutral-900">Profielen in {provinceName}</h1>
       <p class="text-neutral-700">

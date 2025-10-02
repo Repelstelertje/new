@@ -2,6 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import ProvinceGrid from "../../components/ProvinceGrid.astro";
 import { buildTitle, buildDescription } from "../../lib/seo";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 
 const stagingEnv = import.meta.env.STAGING;
 const staging = stagingEnv === true || stagingEnv === "true";
@@ -12,6 +13,7 @@ const description = buildDescription("generic", {
 });
 ---
 <Base title={title} description={description} path="/dating-nederland/" staging={staging}>
+  <Breadcrumbs items={[{ href: "/", label: "Home" }, { href: "/dating-nederland/", label: "Nederland" }]} />
   <section class="flex flex-col gap-6 rounded-2xl bg-white p-8 shadow-sm">
     <div class="flex flex-col gap-4">
       <h1 class="text-3xl font-semibold text-neutral-900 sm:text-4xl">Dating Nederland: alle provincies in één overzicht</h1>
