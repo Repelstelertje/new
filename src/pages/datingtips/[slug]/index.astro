@@ -44,7 +44,8 @@ try {
 
 const breadcrumbItems = [
   { label: "Home", href: "/" },
-  { label: data.title },
+  { label: "Datingtips", href: "/datingtips-nederland/" },
+  { label: data.title, href: Astro.url.pathname },
 ];
 ---
 <Layout
