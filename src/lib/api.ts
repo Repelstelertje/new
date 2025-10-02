@@ -193,7 +193,7 @@ const profileSchema = rawProfileSchema.transform((raw) => {
   const city = (raw as any).city ?? (raw as any).stad;
   const relationship =
     (raw as any).relationship ?? (raw as any).relatiestatus ?? (raw as any).relationship_status;
-  const height = (raw as any).height ?? (raw as any).lengte;
+  const height = (raw as any).height ?? (raw as any).lengte ?? (raw as any).length;
 
   return {
     id: String(raw.id),
