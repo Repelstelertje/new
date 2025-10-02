@@ -1,5 +1,6 @@
 ---
 import Base from "../../../layouts/Base.astro";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
 import ProfileCard from "../../../components/ProfileCard.astro";
 import CTA from "../../../components/CTA.astro";
 import { CITIES } from "../../../lib/cities";
@@ -59,6 +60,12 @@ let intro: string | undefined;
 let pageProfiles: CardProfile[] = profiles;
 let cta: { label: string; href: string } | undefined;
 
+const breadcrumbItems = [
+  { href: "/", label: "Home" },
+  { href: "/datingtips-nederland/", label: "Datingtips" },
+  { href: Astro.url.pathname, label: `Datingtips ${city}` },
+];
+
 if (matched) {
   const entry = await getEntry("datingtips", matched.id);
   const rendered = await entry.render();
@@ -83,6 +90,7 @@ if (matched) {
 }
 ---
 <Base title={contentTitle} description={contentDescription} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+  <Breadcrumbs items={breadcrumbItems} />
   {matched && Content ? (
     <>
       <header class="mb-8 space-y-4">

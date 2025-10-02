@@ -1,5 +1,6 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { CITIES } from "../../lib/cities";
 import { getCollection } from "astro:content";
 
@@ -28,6 +29,7 @@ const findTipForHref = (href: string) => {
 };
 ---
 <Base title={title} description={description} path={Astro.url.pathname} staging={import.meta.env.STAGING}>
+  <Breadcrumbs items={[{ href: "/", label: "Home" }, { href: "/datingtips-nederland/", label: "Datingtips" }]} />
 
 <header class="mb-6">
 <h1 class="text-3xl font-bold text-neutral-900">Datingtips in Nederland</h1>
