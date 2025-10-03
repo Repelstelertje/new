@@ -1,54 +1,49 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { getProvince, getPopular } from "../../lib/api";
-import { PROVINCES } from "../../lib/provinces";
 import { slugifyName } from "../../lib/slug";
+import { loadAllProfiles } from "../../lib/load-profiles";
 
-type CardProfile = Awaited<ReturnType<typeof getProvince>>["profiles"][number];
+type CardProfile = {
+  id: string;
+  name: string;
+  age?: number;
+  province?: string;
+  city?: string;
+  length?: string;
+  description?: string;
+  img?: { src: string; alt: string; srcset?: string; sizes?: string };
+  deeplink?: string;
+};
 
 export async function getStaticPaths() {
-  const pageSize = 60;
+  const csv = loadAllProfiles();
   const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
-  const seen = new Set<string>();
-
-  const push = (profile: CardProfile) => {
-    const slug = slugifyName(profile.name);
-    const key = `${slug}#${profile.id}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    paths.push({ params: { slug }, props: { profile } });
-  };
-
-  try {
-    const popular = await getPopular(240);
-    for (const p of popular) push(p as CardProfile);
-  } catch {}
-
-  for (const provinceName of PROVINCES) {
-    const first = await getProvince(provinceName, pageSize, 1);
-    const totalPages = first.totalPages ?? 1;
-
-    const collect = async (page: number) => {
-      const data = page === 1 ? first : await getProvince(provinceName, pageSize, page);
-      for (const profile of data.profiles) push(profile);
+  for (const r of csv) {
+    const slug = slugifyName(r.profile_name);
+    const p: CardProfile = {
+      id: String(r.profile_id),
+      name: r.profile_name,
+      age: r.age ? Number(r.age) : undefined,
+      province: r.province,
+      city: r.city,
+      length: r.length,
+      description: r.aboutme,
+      img: r.profile_image ? { src: r.profile_image, alt: r.profile_name } : undefined,
     };
-
-    for (let page = 1; page <= totalPages; page++) {
-      await collect(page);
-    }
+    paths.push({ params: { slug }, props: { profile: p } });
   }
-
   return paths;
 }
 
 const { profile } = Astro.props as { profile: CardProfile };
-const idParam = new URL(Astro.url).searchParams.get("id") ?? String(profile.id);
 
-const title = `Date met ${profile.name} in ${profile.province}`;
+const q = new URL(Astro.url).searchParams;
+const idParam = q.get("id") ?? profile.id;
+
+const title = `Date met ${profile.name}${profile.province ? " in " + profile.province : ""}`;
 const description = profile.description ?? `Leer ${profile.name} kennen en stuur gratis een bericht.`;
 const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idParam))}`;
 
-// Afbeelding + fallback
 const imgSrc = profile.img?.src ?? "/img/fallback.svg";
 const imgAlt = profile.img?.alt ?? profile.name;
 
@@ -58,7 +53,6 @@ const analyticsProps = JSON.stringify({
   chat_url: profile.deeplink,
 });
 
-// JSON-LD minimaal
 const personLd = { "@type": "Person", name: profile.name, description: profile.description ?? undefined };
 ---
 <Base title={title} description={description} path={canonicalPath} staging={import.meta.env.STAGING} jsonLd={[personLd]}>
@@ -70,14 +64,16 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
         loading="eager"
         decoding="async"
         class="block h-auto w-full object-cover"
-        data-fallback-src="/img/fallback.svg"
+        data-fallback-src={"/img/fallback.svg"}
       />
     </div>
 
     <div class="space-y-4">
       <header>
         <h1 class="text-3xl font-bold text-neutral-900">{profile.name}</h1>
-        <p class="text-neutral-700">{profile.age} jaar · {profile.city ?? profile.province}</p>
+        <p class="text-neutral-700">
+          {profile.age ? `${profile.age} jaar` : ""}{profile.age && (profile.city || profile.province) ? " · " : ""}{profile.city ?? profile.province}
+        </p>
       </header>
 
       {profile.description && (
@@ -97,39 +93,36 @@ const personLd = { "@type": "Person", name: profile.name, description: profile.d
           </div>
         )}
 
-        <div class="rounded-xl border border-neutral-200 bg-white p-4">
-          <p class="text-xs uppercase tracking-wide text-neutral-500">Leeftijd</p>
-          <p class="mt-1 font-medium text-neutral-900">{profile.age}</p>
-        </div>
-
-        {profile.relationship && (
+        {profile.age && (
           <div class="rounded-xl border border-neutral-200 bg-white p-4">
-            <p class="text-xs uppercase tracking-wide text-neutral-500">Relatiestatus</p>
-            <p class="mt-1 font-medium text-neutral-900">{profile.relationship}</p>
+            <p class="text-xs uppercase tracking-wide text-neutral-500">Leeftijd</p>
+            <p class="mt-1 font-medium text-neutral-900">{profile.age}</p>
           </div>
         )}
 
-        {profile.height && (
+        {profile.length && (
           <div class="rounded-xl border border-neutral-200 bg-white p-4">
             <p class="text-xs uppercase tracking-wide text-neutral-500">Lengte</p>
-            <p class="mt-1 font-medium text-neutral-900">{profile.height}</p>
+            <p class="mt-1 font-medium text-neutral-900">{profile.length}</p>
           </div>
         )}
       </section>
 
-      <div class="pt-2">
-        <a
-          href={profile.deeplink}
-          rel="nofollow sponsored noopener"
-          target="_blank"
-          class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
-          aria-label="Stuur gratis bericht"
-          data-analytics="outbound_click"
-          data-props={analyticsProps}
-        >
-          Stuur gratis bericht
-        </a>
-      </div>
+      {profile.deeplink && (
+        <div class="pt-2">
+          <a
+            href={profile.deeplink}
+            rel="nofollow sponsored noopener"
+            target="_blank"
+            class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+            aria-label="Stuur gratis bericht"
+            data-analytics="outbound_click"
+            data-props={analyticsProps}
+          >
+            Stuur gratis bericht
+          </a>
+        </div>
+      )}
     </div>
   </article>
 </Base>
