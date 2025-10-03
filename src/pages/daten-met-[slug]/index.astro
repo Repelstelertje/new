@@ -5,21 +5,36 @@ import { slugifyName } from "../../lib/slug";
 
 export async function getStaticPaths() {
   const rows = loadAllProfiles();
-  const paths = rows.map((r) => ({
-    params: { slug: slugifyName(r.profile_name ?? r.profile_id) },
-    props: {
-      ssrProfile: {
-        id: String(r.profile_id),
-        name: r.profile_name ?? "",
-        province: r.province ?? "",
-        city: r.city ?? "",
-        age: r.age ? Number.parseInt(r.age, 10) : undefined,
-        height: r.length ?? "",
-        description: r.aboutme ?? "",
-        img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
-      },
-    },
-  }));
+  const paths = rows
+    .map((r) => {
+      const idString = String(r?.profile_id ?? "").trim();
+      if (!idString) return undefined;
+
+      const nameSlug = r?.profile_name ? slugifyName(r.profile_name) : "";
+      const idSlug = slugifyName(idString);
+      const safeNameSlug = nameSlug && nameSlug.length <= 80 ? nameSlug : "";
+      const safeIdSlug = idSlug && idSlug.length <= 80 ? idSlug : "";
+      const slugSource = safeNameSlug || safeIdSlug || idSlug || idString;
+      const slug = slugSource.length > 80 ? slugSource.slice(0, 80) : slugSource;
+      if (!slug) return undefined;
+
+      return {
+        params: { slug },
+        props: {
+          ssrProfile: {
+            id: idString,
+            name: r.profile_name ?? "",
+            province: r.province ?? "",
+            city: r.city ?? "",
+            age: r.age ? Number.parseInt(r.age, 10) : undefined,
+            height: r.length ?? "",
+            description: r.aboutme ?? "",
+            img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
+          },
+        },
+      };
+    })
+    .filter(Boolean);
   return paths;
 }
 
