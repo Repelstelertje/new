@@ -33,9 +33,19 @@ function pickImage(p, id) {
 }
 
 async function fetchConfig() {
-  const r = await fetch("/site.config.json", { cache: "no-store" });
-  if (!r.ok) throw new Error(`cfg ${r.status}`);
-  return r.json();
+  try {
+    const r = await fetch("/site.config.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(`cfg ${r.status}`);
+    return await r.json();
+  } catch (err) {
+    console.warn("Profile fallback: /site.config.json niet gevonden, gebruik defaults.", err);
+    return {
+      api: {
+        baseUrl: "https://16hl07csd16.nl",
+        endpoints: { profileById: "/profile/id/{id}" }
+      }
+    };
+  }
 }
 
 async function fetchProfileById(id, cfg) {

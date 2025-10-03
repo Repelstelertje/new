@@ -7,49 +7,74 @@ export type CsvProfile = {
   gender?: string;
   province?: string;
   city?: string;
-  age?: string | number;
+  age?: string;
   length?: string;
   aboutme?: string;
   profile_image?: string;
 };
 
-// tiny CSV reader without deps (expects first line header, comma separated, no quoted commas)
-function readCsv(filePath: string): CsvProfile[] {
-  const abs = path.resolve(process.cwd(), filePath);
-  if (!fs.existsSync(abs)) return [];
-  const raw = fs.readFileSync(abs, "utf8");
-  const lines = raw.split(/\r?\n/).filter(Boolean);
-  if (lines.length === 0) return [];
-  const headers = lines[0].split(",").map((h) => h.trim());
-  const rows = lines.slice(1);
-  const records: CsvProfile[] = [];
-  for (const line of rows) {
-    const cols = line.split(",").map((c) => c.trim());
-    const obj: Record<string, string> = {};
-    headers.forEach((h, i) => (obj[h] = cols[i] ?? ""));
-    // normalize keys we expect
-    records.push({
-      profile_id: obj.profile_id,
-      profile_name: obj.profile_name,
-      gender: obj.gender || undefined,
-      province: obj.province || undefined,
-      city: obj.city || undefined,
-      age: obj.age || undefined,
-      length: obj.length || undefined,
-      aboutme: obj.aboutme || undefined,
-      profile_image: obj.profile_image || undefined,
-    });
-  }
-  return records.filter((r) => r.profile_id && r.profile_name);
+function stripQuotes(s: string) {
+  if (s == null) return "";
+  const t = s.trim();
+  return t.startsWith('"') && t.endsWith('"') ? t.slice(1, -1) : t;
 }
 
-export function loadAllProfiles() {
+function splitSafe(line: string, delim: string): string[] {
+  // Eenvoudige CSV-splitter met quote-ondersteuning (geen escaped quotes nodig in onze data)
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (ch === delim && !inQuotes) {
+      out.push(cur);
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function parseCsv(text: string): CsvProfile[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
+  if (lines.length === 0) return [];
+  const headerLine = lines[0];
+  const delim = headerLine.includes(";") ? ";" : ",";
+  const headers = headerLine.split(delim).map((h) => stripQuotes(h));
+  const rows: CsvProfile[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cells = splitSafe(lines[i], delim).map(stripQuotes);
+    const rec: Record<string, string> = {};
+    for (let c = 0; c < headers.length; c++) {
+      rec[headers[c]] = cells[c] ?? "";
+    }
+    rows.push(rec as CsvProfile);
+  }
+  return rows;
+}
+
+function readCsv(relPath: string): CsvProfile[] {
+  const abs = path.resolve(process.cwd(), relPath);
+  if (!fs.existsSync(abs)) return [];
+  const txt = fs.readFileSync(abs, "utf8");
+  return parseCsv(txt);
+}
+
+export function loadAllProfiles(): CsvProfile[] {
+  // Merge, met voorkeur voor 'profiles.csv' waarden
   const primary = readCsv("data/profiles.csv");
-  const extra = readCsv("data/popular.csv");
+  const popular = readCsv("data/popular.csv");
   const byId = new Map<string, CsvProfile>();
-  // prefer primary over extra
-  for (const r of [...extra, ...primary]) {
-    if (!byId.has(r.profile_id)) byId.set(r.profile_id, r);
+  for (const row of [...popular, ...primary]) {
+    if (!row?.profile_id || !row?.profile_name) continue;
+    // primary overschrijft popular: daarom duwen we 'popular' eerst
+    byId.set(String(row.profile_id), row);
   }
   return Array.from(byId.values());
 }
