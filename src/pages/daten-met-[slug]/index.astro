@@ -1,128 +1,165 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { slugifyName } from "../../lib/slug";
-import { loadAllProfiles } from "../../lib/load-profiles";
+import fs from "node:fs";
+import path from "node:path";
 
-type CardProfile = {
-  id: string;
-  name: string;
-  age?: number;
+type CsvRow = {
+  profile_id: string;
+  profile_name: string;
   province?: string;
   city?: string;
+  age?: string;
   length?: string;
-  description?: string;
-  img?: { src: string; alt: string; srcset?: string; sizes?: string };
-  deeplink?: string;
+  aboutme?: string;
+  profile_image?: string;
 };
 
+function readCsv(filePath: string): CsvRow[] {
+  const abs = path.resolve(Astro.root.pathname, filePath);
+  if (!fs.existsSync(abs)) return [];
+  const text = fs.readFileSync(abs, "utf8");
+  const [headerLine, ...lines] = text.split(/\r?\n/).filter(Boolean);
+  const headers = headerLine.split(",").map((h) => h.trim());
+  return lines.map((ln) => {
+    // eenvoudige CSV (geen quotes in velden verwacht)
+    const cols = ln.split(",").map((c) => c.trim());
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => (row[h] = cols[i] ?? ""));
+    return row as unknown as CsvRow;
+  });
+}
+
 export async function getStaticPaths() {
-  const csv = loadAllProfiles();
-  const paths: { params: { slug: string }; props: { profile: CardProfile } }[] = [];
-  for (const r of csv) {
-    const slug = slugifyName(r.profile_name);
-    const p: CardProfile = {
-      id: String(r.profile_id),
-      name: r.profile_name,
-      age: r.age ? Number(r.age) : undefined,
-      province: r.province,
-      city: r.city,
-      length: r.length,
-      description: r.aboutme,
-      img: r.profile_image ? { src: r.profile_image, alt: r.profile_name } : undefined,
-    };
-    paths.push({ params: { slug }, props: { profile: p } });
+  const a = readCsv("data/profiles.csv");
+  const b = readCsv("data/popular.csv");
+  const byId = new Map<string, CsvRow>();
+  for (const r of [...a, ...b]) {
+    if (!r?.profile_id) continue;
+    if (!byId.has(r.profile_id)) byId.set(r.profile_id, r);
   }
+  const paths = Array.from(byId.values()).map((r) => ({
+    params: { slug: slugifyName(r.profile_name ?? r.profile_id) },
+    props: {
+      ssrProfile: {
+        id: String(r.profile_id),
+        name: r.profile_name ?? "",
+        province: r.province ?? "",
+        city: r.city ?? "",
+        age: r.age ? Number.parseInt(r.age, 10) : undefined,
+        height: r.length ?? "",
+        description: r.aboutme ?? "",
+        img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
+      },
+    },
+  }));
   return paths;
 }
 
-const { profile } = Astro.props as { profile: CardProfile };
+const { ssrProfile } = Astro.props as {
+  ssrProfile?: {
+    id: string;
+    name: string;
+    province?: string;
+    city?: string;
+    age?: number;
+    height?: string;
+    description?: string;
+    img?: { src: string; alt: string };
+  };
+};
 
+// ID uit query; bij mismatch NIET meer 404’en — we tonen SSG en laten JS de deeplink bijwerken
 const q = new URL(Astro.url).searchParams;
-const idParam = q.get("id") ?? profile.id;
+const idParam = q.get("id") ?? (ssrProfile?.id ?? "");
 
-const title = `Date met ${profile.name}${profile.province ? " in " + profile.province : ""}`;
-const description = profile.description ?? `Leer ${profile.name} kennen en stuur gratis een bericht.`;
-const canonicalPath = `${Astro.url.pathname}?id=${encodeURIComponent(String(idParam))}`;
+// SEO & canonical
+const title = ssrProfile?.name ? `Date met ${ssrProfile.name}${ssrProfile.province ? ` in ${ssrProfile.province}` : ""}` : "Profiel";
+const description = ssrProfile?.description ?? `Leer dit profiel kennen en stuur gratis een bericht.`;
+const canonicalPath = `${Astro.url.pathname}${idParam ? `?id=${encodeURIComponent(String(idParam))}` : ""}`;
 
-const imgSrc = profile.img?.src ?? "/img/fallback.svg";
-const imgAlt = profile.img?.alt ?? profile.name;
+// Afbeelding + fallback
+const imgSrc = ssrProfile?.img?.src ?? "/img/fallback.svg";
+const imgAlt = ssrProfile?.img?.alt ?? ssrProfile?.name ?? "Profielafbeelding";
 
-const analyticsProps = JSON.stringify({
-  profile_id: String(profile.id),
-  province: profile.province,
-  chat_url: profile.deeplink,
-});
+const hasSSG = Boolean(ssrProfile);
 
-const personLd = { "@type": "Person", name: profile.name, description: profile.description ?? undefined };
+// JSON-LD minimaal
+const personLd = ssrProfile?.name ? { "@type": "Person", name: ssrProfile.name, description: ssrProfile.description ?? undefined } : undefined;
 ---
-<Base title={title} description={description} path={canonicalPath} staging={import.meta.env.STAGING} jsonLd={[personLd]}>
-  <article class="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-[360px,1fr]">
-    <div class="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
-      <img
-        src={imgSrc}
-        alt={imgAlt}
-        loading="eager"
-        decoding="async"
-        class="block h-auto w-full object-cover"
-        data-fallback-src={"/img/fallback.svg"}
-      />
-    </div>
+<Base title={title} description={description} path={canonicalPath} staging={import.meta.env.STAGING} jsonLd={personLd ? [personLd] : []}>
+  {hasSSG ? (
+    <article class="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-[360px,1fr]">
+      <div class="overflow-hidden rounded-2xl border border-neutral-200 bg-white">
+        <img
+          id="profile-img"
+          src={imgSrc}
+          alt={imgAlt}
+          loading="eager"
+          decoding="async"
+          class="block h-auto w-full object-cover"
+        />
+      </div>
 
-    <div class="space-y-4">
-      <header>
-        <h1 class="text-3xl font-bold text-neutral-900">{profile.name}</h1>
-        <p class="text-neutral-700">
-          {profile.age ? `${profile.age} jaar` : ""}{profile.age && (profile.city || profile.province) ? " · " : ""}{profile.city ?? profile.province}
-        </p>
-      </header>
+      <div class="space-y-4">
+        <header>
+          <h1 class="text-3xl font-bold text-neutral-900">{ssrProfile!.name}</h1>
+          <p class="text-neutral-700">
+            {(ssrProfile!.age ? `${ssrProfile!.age} jaar · ` : "")}{ssrProfile!.city || ssrProfile!.province}
+          </p>
+        </header>
 
-      {profile.description && (
-        <p class="text-neutral-800 leading-relaxed">{profile.description}</p>
-      )}
-
-      <section class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-xl border border-neutral-200 bg-white p-4">
-          <p class="text-xs uppercase tracking-wide text-neutral-500">Provincie</p>
-          <p class="mt-1 font-medium text-neutral-900">{profile.province}</p>
-        </div>
-
-        {profile.city && (
-          <div class="rounded-xl border border-neutral-200 bg-white p-4">
-            <p class="text-xs uppercase tracking-wide text-neutral-500">Stad</p>
-            <p class="mt-1 font-medium text-neutral-900">{profile.city}</p>
-          </div>
+        {ssrProfile!.description && (
+          <p class="text-neutral-800 leading-relaxed">{ssrProfile!.description}</p>
         )}
 
-        {profile.age && (
+        <section class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div class="rounded-xl border border-neutral-200 bg-white p-4">
-            <p class="text-xs uppercase tracking-wide text-neutral-500">Leeftijd</p>
-            <p class="mt-1 font-medium text-neutral-900">{profile.age}</p>
+            <p class="text-xs uppercase tracking-wide text-neutral-500">Provincie</p>
+            <p class="mt-1 font-medium text-neutral-900">{ssrProfile!.province}</p>
           </div>
-        )}
 
-        {profile.length && (
-          <div class="rounded-xl border border-neutral-200 bg-white p-4">
-            <p class="text-xs uppercase tracking-wide text-neutral-500">Lengte</p>
-            <p class="mt-1 font-medium text-neutral-900">{profile.length}</p>
-          </div>
-        )}
-      </section>
+          {ssrProfile!.city && (
+            <div class="rounded-xl border border-neutral-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wide text-neutral-500">Stad</p>
+              <p class="mt-1 font-medium text-neutral-900">{ssrProfile!.city}</p>
+            </div>
+          )}
 
-      {profile.deeplink && (
+          {ssrProfile!.age && (
+            <div class="rounded-xl border border-neutral-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wide text-neutral-500">Leeftijd</p>
+              <p class="mt-1 font-medium text-neutral-900">{ssrProfile!.age}</p>
+            </div>
+          )}
+
+          {ssrProfile!.height && (
+            <div class="rounded-xl border border-neutral-200 bg-white p-4">
+              <p class="text-xs uppercase tracking-wide text-neutral-500">Lengte</p>
+              <p class="mt-1 font-medium text-neutral-900">{ssrProfile!.height}</p>
+            </div>
+          )}
+        </section>
+
         <div class="pt-2">
           <a
-            href={profile.deeplink}
+            id="profile-cta"
+            href="#"
             rel="nofollow sponsored noopener"
             target="_blank"
             class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
             aria-label="Stuur gratis bericht"
-            data-analytics="outbound_click"
-            data-props={analyticsProps}
           >
             Stuur gratis bericht
           </a>
         </div>
-      )}
-    </div>
-  </article>
+      </div>
+    </article>
+  ) : (
+    // Geen SSG-match → render container; client-fallback bouwt volledige view
+    <>
+      <div id="profile-view"></div>
+    </>
+  )}
+  <script type="module" src="/js/profile-fallback.js"></script>
 </Base>
