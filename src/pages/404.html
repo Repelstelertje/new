@@ -9,11 +9,16 @@
   </head>
   <body class="bg-neutral-50 text-neutral-900">
     <main id="content" class="mx-auto max-w-5xl px-4 py-10">
+      <!-- Profile fallback mount (populated by /js/profile-fallback.js if path matches /daten-met-... ) -->
+      <div id="profile-view"></div>
+
       <h1 class="text-3xl font-bold text-neutral-900">Pagina niet gevonden</h1>
       <p class="mt-4 max-w-prose text-neutral-700">
-        De opgevraagde pagina bestaat niet. Ga terug naar de <a class="text-sky-600 underline" href="/">homepage</a> of bekijk
-        onze profielen.
+        De opgevraagde pagina bestaat niet. Ga terug naar de <a class="text-sky-600 underline" href="/">homepage</a> of bekijk onze profielen.
       </p>
     </main>
+
+    <!-- Client profile fallback (GET-by-id) -->
+    <script src="/js/profile-fallback.js" type="module"></script>
   </body>
 </html>
