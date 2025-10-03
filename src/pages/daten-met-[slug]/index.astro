@@ -4,6 +4,7 @@ import { slugifyName } from "../../lib/slug";
 import fs from "node:fs";
 import path from "node:path";
 
+// --- CSV helpers (in-scope voor getStaticPaths) ---
 type CsvRow = {
   profile_id: string;
   profile_name: string;
@@ -16,44 +17,56 @@ type CsvRow = {
 };
 
 function readCsv(filePath: string): CsvRow[] {
-  const abs = path.resolve(Astro.root.pathname, filePath);
+  // Gebruik process.cwd() i.p.v. Astro.root.pathname om paden stabiel te resolven in build.
+  const abs = path.resolve(process.cwd(), filePath);
   if (!fs.existsSync(abs)) return [];
   const text = fs.readFileSync(abs, "utf8");
-  const [headerLine, ...lines] = text.split(/\r?\n/).filter(Boolean);
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if (lines.length === 0) return [];
+  const headerLine = lines[0];
   const headers = headerLine.split(",").map((h) => h.trim());
-  return lines.map((ln) => {
-    // eenvoudige CSV (geen quotes in velden verwacht)
+  const rows = lines.slice(1);
+  return rows.map((ln) => {
+    // Eenvoudige CSV parser (veldnamen zonder quotes/comma’s in velden)
     const cols = ln.split(",").map((c) => c.trim());
     const row: Record<string, string> = {};
-    headers.forEach((h, i) => (row[h] = cols[i] ?? ""));
-    return row as unknown as CsvRow;
+    headers.forEach((h, i) => {
+      row[h] = cols[i] ?? "";
+    });
+    return row as CsvRow;
   });
 }
 
 export async function getStaticPaths() {
-  const a = readCsv("data/profiles.csv");
-  const b = readCsv("data/popular.csv");
-  const byId = new Map<string, CsvRow>();
-  for (const r of [...a, ...b]) {
-    if (!r?.profile_id) continue;
-    if (!byId.has(r.profile_id)) byId.set(r.profile_id, r);
-  }
-  const paths = Array.from(byId.values()).map((r) => ({
-    params: { slug: slugifyName(r.profile_name ?? r.profile_id) },
-    props: {
-      ssrProfile: {
-        id: String(r.profile_id),
-        name: r.profile_name ?? "",
-        province: r.province ?? "",
-        city: r.city ?? "",
-        age: r.age ? Number.parseInt(r.age, 10) : undefined,
-        height: r.length ?? "",
-        description: r.aboutme ?? "",
-        img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
+  try {
+    const a = readCsv("data/profiles.csv");
+    const b = readCsv("data/popular.csv");
+    const byId = new Map<string, CsvRow>();
+    for (const r of [...a, ...b]) {
+      if (!r?.profile_id) continue;
+      if (!byId.has(r.profile_id)) byId.set(r.profile_id, r);
+    }
+    if (byId.size === 0) return [];
+    const paths = Array.from(byId.values()).map((r) => ({
+      params: { slug: slugifyName(r.profile_name ?? r.profile_id) },
+      props: {
+        ssrProfile: {
+          id: String(r.profile_id),
+          name: r.profile_name ?? "",
+          province: r.province ?? "",
+          city: r.city ?? "",
+          age: r.age ? Number.parseInt(r.age, 10) : undefined,
+          height: r.length ?? "",
+          description: r.aboutme ?? "",
+          img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
+        },
       },
-    },
-  }));
-  return paths;
+    }));
+    return paths;
+  } catch {
+    // Fail-safe: geen crash bij tijdelijk leesprobleem
+    return [];
+  }
 }
 
 const { ssrProfile } = Astro.props as {
