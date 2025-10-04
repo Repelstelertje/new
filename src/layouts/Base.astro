@@ -45,7 +45,14 @@ const ogData = buildOpenGraph({
     <!-- Content Security Policy (meta) | geen frame-ancestors in meta -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' https: data:; font-src 'self' data:; script-src 'self'; connect-src https://16hl07csd16.nl; style-src 'self' 'unsafe-inline'"
+      content="
+        default-src 'self';
+        img-src 'self' https: data:;
+        font-src 'self' data:;
+        script-src 'self';
+        connect-src 'self' https://16hl07csd16.nl;
+        style-src 'self' 'unsafe-inline';
+      "
     />
 
     <!-- Open Graph -->

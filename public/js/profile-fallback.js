@@ -1,32 +1,43 @@
+// Eén bron van waarheid: client-fallback voor /daten-met-.../
+// Werkt in twee modi:
+// 1) Vervangen: als er <div id="profile-view"> bestaat (geen SSG), render volledige pagina.
+// 2) Verrijken: als SSG markup bestaat, update CTA (deeplink) en afbeelding ALLEEN indien nodig.
+
 const PATH_OK = /^\/daten-met-[a-z0-9-]+\/?$/i;
 const ESC = { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" };
 const e = (s) => String(s ?? "").replace(/[&<>"']/g, ch => ESC[ch]);
 
 function withAffiliate(url, id) {
   if (!url) return "";
-  try { const u = new URL(url); u.searchParams.set("ref","32"); u.searchParams.set("source","oproepjes"); u.searchParams.set("subsource", String(id??"")); return u.toString(); }
-  catch { return url; }
-}
-function pickImage(p, id) {
-  return p?.img?.src || p?.imageUrl || p?.thumbUrl || p?.avatar || p?.picture || p?.src ||
-    ((p?.picture_url && p?.basename)
-      ? `${String(p.picture_url).replace(/\/+$/,"")}/pics/${String(id).slice(-2)}/${String(id).slice(-4)}/${id}/${p.basename}`
-      : "/img/fallback.svg");
-}
-async function fetchConfig() {
   try {
-    const r = await fetch("/site.config.json", { cache: "no-store" });
-    if (!r.ok) throw new Error(String(r.status));
-    return await r.json();
-  } catch (err) {
-    // Veilige defaults zodat fallback altijd werkt
-    console.warn("profile-fallback: site.config.json ontbreekt, gebruik defaults");
-    return { api: { baseUrl: "https://16hl07csd16.nl", endpoints: { profileById: "/profile/id/{id}" } } };
+    const u = new URL(url);
+    u.searchParams.set("ref", "32");
+    u.searchParams.set("source", "oproepjes");
+    u.searchParams.set("subsource", String(id ?? ""));
+    return u.toString();
+  } catch {
+    return url;
   }
 }
+
+function pickImage(p, id) {
+  return (
+    p?.img?.src ||
+    p?.imageUrl ||
+    p?.thumbUrl ||
+    p?.avatar ||
+    p?.picture ||
+    p?.src ||
+    ((p?.picture_url && p?.basename)
+      ? `${String(p.picture_url).replace(/\/+$/, "")}/pics/${String(id).slice(-2)}/${String(id).slice(-4)}/${id}/${p.basename}`
+      : "/img/fallback.svg")
+  );
+}
+
 async function fetchProfileById(id, cfg) {
-  const base = String(cfg?.api?.baseUrl ?? "").replace(/\/+$/, "");
-  const tpl  = cfg?.api?.endpoints?.profileById || "/profile/id/{id}";
+  // Geen site.config.json fetch meer (CSP/console-noise). We gebruiken defaults:
+  const base = String(cfg?.apiBase ?? "https://16hl07csd16.nl").replace(/\/+$/, "");
+  const tpl = String(cfg?.profileById ?? "/profile/id/{id}");
   if (!base) throw new Error("no API base");
   const ep = tpl.replace("{id}", encodeURIComponent(String(id)));
   const url = `${base}${ep.startsWith("/") ? "" : "/"}${ep}`;
@@ -35,6 +46,7 @@ async function fetchProfileById(id, cfg) {
   const json = await r.json();
   return json?.profile ?? json?.data ?? json;
 }
+
 function normalize(raw, id) {
   if (!raw) return null;
   const pid = raw.id ?? id;
@@ -51,17 +63,20 @@ function normalize(raw, id) {
     image: pickImage(raw, pid),
   };
 }
+
 function renderFull(mount, p) {
   const meta = [];
-  if (p.province) meta.push({label:"Provincie", value:p.province});
-  if (p.city)     meta.push({label:"Stad", value:p.city});
-  if (p.age)      meta.push({label:"Leeftijd", value:String(p.age)});
-  if (p.relationship) meta.push({label:"Relatiestatus", value:p.relationship});
-  if (p.height)   meta.push({label:"Lengte", value:p.height});
+  if (p.province) meta.push({ label: "Provincie", value: p.province });
+  if (p.city) meta.push({ label: "Stad", value: p.city });
+  if (p.age) meta.push({ label: "Leeftijd", value: String(p.age) });
+  if (p.relationship) meta.push({ label: "Relatiestatus", value: p.relationship });
+  if (p.height) meta.push({ label: "Lengte", value: p.height });
   mount.innerHTML = `
     <article style="display:grid;gap:2rem;grid-template-columns:minmax(0,1fr)">
       <div style="overflow:hidden;border:1px solid #e5e7eb;border-radius:1rem;background:#fff;max-width:360px">
-        <img id="profile-img" src="${e(p.image)}" alt="${e(p.name)}" style="display:block;width:100%;height:auto;object-fit:cover" />
+        <img id="profile-img" src="${e(p.image)}" alt="${e(p.name)}"
+             style="display:block;width:100%;height:auto;object-fit:cover"
+             data-fallback-src="/img/fallback.svg" />
       </div>
       <div style="display:flex;flex-direction:column;gap:1rem">
         <header>
@@ -71,12 +86,12 @@ function renderFull(mount, p) {
         ${p.description ? `<p style="margin:0;color:#1f2937;line-height:1.7">${e(p.description)}</p>` : ""}
         ${meta.length ? `
           <section style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
-            ${meta.map(m=>`
+            ${meta.map(m => `
               <div style="background:#fff;border:1px solid #e5e7eb;border-radius:.75rem;padding:1rem">
                 <p style="margin:0 0 .5rem;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b">${e(m.label)}</p>
                 <p style="margin:0;font-weight:600">${e(m.value)}</p>
               </div>`).join("")}
-          </section>`: ""}
+          </section>` : ""}
         ${p.deeplink ? `
           <div style="padding-top:.5rem">
             <a id="profile-cta" href="${e(p.deeplink)}" rel="nofollow sponsored noopener" target="_blank"
@@ -88,15 +103,43 @@ function renderFull(mount, p) {
     </article>`;
   if (p.name) document.title = `Date met ${p.name}${p.province ? ` in ${p.province}` : ""}`;
 }
+
+function enhanceExisting(p) {
+  const img = document.getElementById("profile-img");
+  if (img && p.image) {
+    img.setAttribute("src", p.image);
+    if (!img.getAttribute("data-fallback-src")) {
+      img.setAttribute("data-fallback-src", "/img/fallback.svg");
+    }
+  }
+  const cta = document.getElementById("profile-cta");
+  if (cta && p.deeplink) cta.setAttribute("href", p.deeplink);
+}
+
 (async function () {
   if (!PATH_OK.test(location.pathname)) return;
   const id = new URLSearchParams(location.search).get("id");
   if (!id) return;
-  let cfg, raw;
-  try { cfg = await fetchConfig(); raw = await fetchProfileById(id, cfg); }
-  catch { return; }
+  const mount = document.getElementById("profile-view");
+
+  // Als SSG aanwezig is: alleen fetchen indien CTA of hoofdbeeld nog verbetering nodig heeft
+  if (!mount) {
+    const imgEl = document.getElementById("profile-img");
+    const ctaEl = document.getElementById("profile-cta");
+    const imgSrc = imgEl?.getAttribute("src") || "";
+    const needImage = !!imgEl && (!imgSrc || imgSrc.endsWith("/img/fallback.svg"));
+    const needCta = !!ctaEl && (!ctaEl.getAttribute("href") || ctaEl.getAttribute("href") === "#");
+    if (!needImage && !needCta) return;
+  }
+
+  let raw;
+  try {
+    raw = await fetchProfileById(id, { apiBase: "https://16hl07csd16.nl", profileById: "/profile/id/{id}" });
+  } catch {
+    return;
+  }
   const prof = normalize(raw, id);
   if (!prof) return;
-  const mount = document.getElementById("profile-view");
   if (mount) renderFull(mount, prof);
+  else enhanceExisting(prof);
 })();
