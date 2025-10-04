@@ -1,7 +1,9 @@
 // Client-fallback voor /daten-met-.../
 // Draai alleen indien:
 // - pad matcht profielroute, EN
-// - er GEEN geldige server-side CTA is (href begint niet met http) of GEEN SSG-markup aanwezig is.
+// - (a) er GEEN geldige server-side CTA is (href begint niet met http),
+//   OF (b) de SSG-afbeelding (id="profile-img") de fallback toont,
+//   OF (c) er GEEN SSG-markup aanwezig is (volledige client render).
 
 const PATH_OK = /^\/daten-met-[a-z0-9-]+\/?$/i; // /daten-met-naam/ (met of zonder trailing slash)
 const API_BASE = "https://16hl07csd16.nl";      // hardcoded ivm CSP connect-src
@@ -118,10 +120,18 @@ function enhanceExisting(p) {
   const id = new URLSearchParams(location.search).get("id");
   if (!id) return;                                      // id vereist
 
-  // Als SSG al een werkende CTA heeft (http/https), niets doen.
+  // Is er SSG markup?
+  const mount = document.getElementById("profile-view");
   const cta = document.getElementById("profile-cta");
   const ctaHref = cta?.getAttribute?.("href") || "";
-  if (cta && /^https?:\/\//i.test(ctaHref)) return;
+  const hasValidCta = /^https?:\/\//i.test(ctaHref);
+  const img = document.getElementById("profile-img");
+  const imgSrc = (img && img.getAttribute("src")) || "";
+  const showsFallback = /\/img\/fallback\.svg(\?|#|$)/.test(imgSrc);
+
+  // Beslis: alleen fetchen indien geen SSG of (CTA ongeldig) of (afbeelding = fallback)
+  const mustFetch = !hasValidCta || showsFallback || !!mount;
+  if (!mustFetch) return;
 
   let raw;
   try { raw = await fetchProfileById(id); }
@@ -129,7 +139,6 @@ function enhanceExisting(p) {
   const prof = normalize(raw, id);
   if (!prof) return;
 
-  const mount = document.getElementById("profile-view");
   if (mount) renderFull(mount, prof);   // geen SSG → volledige render
   else enhanceExisting(prof);           // wél SSG → CTA/img bijwerken
 })();
