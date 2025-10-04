@@ -1,41 +1,95 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { loadAllProfiles } from "../../lib/load-profiles";
 import { slugifyName } from "../../lib/slug";
+import fs from "node:fs";
+import path from "node:path";
+import { readCsv, fixText } from "../../lib/csv";
+
+type CsvRow = {
+  profile_id: string;
+  profile_name: string;
+  province?: string;
+  city?: string;
+  age?: string;
+  length?: string;
+  aboutme?: string;
+  profile_image?: string;
+};
+
+type SiteCfg = {
+  api?: {
+    deeplink?: {
+      base?: string;
+      utm?: { source?: string; medium?: string; campaign?: string };
+      subidParam?: string;
+    };
+  };
+};
 
 export async function getStaticPaths() {
-  const rows = loadAllProfiles();
-  const paths = rows
-    .map((r) => {
-      const idString = String(r?.profile_id ?? "").trim();
-      if (!idString) return undefined;
-
-      const nameSlug = r?.profile_name ? slugifyName(r.profile_name) : "";
-      const idSlug = slugifyName(idString);
-      const safeNameSlug = nameSlug && nameSlug.length <= 80 ? nameSlug : "";
-      const safeIdSlug = idSlug && idSlug.length <= 80 ? idSlug : "";
-      const slugSource = safeNameSlug || safeIdSlug || idSlug || idString;
-      const slug = slugSource.length > 80 ? slugSource.slice(0, 80) : slugSource;
-      if (!slug) return undefined;
-
-      return {
-        params: { slug },
-        props: {
-          ssrProfile: {
-            id: idString,
-            name: r.profile_name ?? "",
-            province: r.province ?? "",
-            city: r.city ?? "",
-            age: r.age ? Number.parseInt(r.age, 10) : undefined,
-            height: r.length ?? "",
-            description: r.aboutme ?? "",
-            img: { src: r.profile_image ?? "/img/fallback.svg", alt: r.profile_name ?? "Profielafbeelding" },
+  const a = readCsv("data/profiles.csv") as unknown as CsvRow[];
+  const b = readCsv("data/popular.csv") as unknown as CsvRow[];
+  const byId = new Map<string, CsvRow>();
+  for (const r of [...a, ...b]) {
+    if (!r?.profile_id) continue;
+    if (!byId.has(r.profile_id)) byId.set(r.profile_id, r);
+  }
+  const cfg = (() => {
+    const abs = path.resolve(process.cwd(), "site.config.json");
+    if (!fs.existsSync(abs)) return {} as const;
+    try { return JSON.parse(fs.readFileSync(abs, "utf8")) as SiteCfg; }
+    catch { return {} as const; }
+  })();
+  const buildDeeplink = (id: string, province?: string) => {
+    const base = cfg.api?.deeplink?.base;
+    if (!base) return undefined;
+    try {
+      const u = new URL(base);
+      const utm = cfg.api?.deeplink?.utm || {};
+      if (utm.source) u.searchParams.set("utm_source", utm.source);
+      if (utm.medium) u.searchParams.set("utm_medium", utm.medium);
+      if (utm.campaign) {
+        const camp = utm.campaign.replace("{provincie}", String(province ?? ""));
+        u.searchParams.set("utm_campaign", camp);
+      }
+      const sub = cfg.api?.deeplink?.subidParam || "subid";
+      u.searchParams.set(sub, String(id));
+      return u.toString();
+    } catch {
+      return undefined;
+    }
+  };
+  const paths = Array.from(byId.values()).map((r) => {
+    const name = fixText(r.profile_name) || "";
+    const desc = fixText(r.aboutme) || "";
+    const province = fixText(r.province) || "";
+    const city = fixText(r.city) || "";
+    const id = String(r.profile_id);
+    const slugSource = slugifyName(name) || slugifyName(id) || id;
+    if (!slugSource) return undefined;
+    const slug = slugSource.length > 80 ? slugSource.slice(0, 80) : slugSource;
+    const deeplink = buildDeeplink(id, province);
+    return {
+      params: { slug },
+      props: {
+        ssrProfile: {
+          id,
+          name,
+          province,
+          city,
+          age: r.age ? Number.parseInt(r.age, 10) : undefined,
+          height: r.length ?? "",
+          description: desc,
+          deeplink,
+          img: {
+            src: r.profile_image || "/img/fallback.svg",
+            alt: name || "Profielafbeelding",
           },
         },
-      };
-    })
-    .filter(Boolean);
-  return paths;
+      },
+    };
+  }).filter(Boolean);
+  return paths as Array<{ params: { slug: string }; props: unknown }>;
 }
 
 const { ssrProfile } = Astro.props as {
@@ -47,6 +101,7 @@ const { ssrProfile } = Astro.props as {
     age?: number;
     height?: string;
     description?: string;
+    deeplink?: string;
     img?: { src: string; alt: string };
   };
 };
@@ -127,7 +182,7 @@ const personLd = ssrProfile?.name ? { "@type": "Person", name: ssrProfile.name, 
         <div class="pt-2">
           <a
             id="profile-cta"
-            href="#"
+            href={ssrProfile!.deeplink || "#"}
             rel="nofollow sponsored noopener"
             target="_blank"
             class="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"

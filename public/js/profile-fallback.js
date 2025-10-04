@@ -1,9 +1,10 @@
-// Eén bron van waarheid: client-fallback voor /daten-met-.../
-// Werkt in twee modi:
-// 1) Vervangen: als er <div id="profile-view"> bestaat (geen SSG), render volledige pagina.
-// 2) Verrijken: als SSG markup bestaat, update CTA (deeplink) en afbeelding ALLEEN indien nodig.
+// Client-fallback voor /daten-met-.../
+// Draai alleen indien:
+// - pad matcht profielroute, EN
+// - er GEEN geldige server-side CTA is (href begint niet met http) of GEEN SSG-markup aanwezig is.
 
-const PATH_OK = /^\/daten-met-[a-z0-9-]+\/?$/i;
+const PATH_OK = /^\/daten-met-[a-z0-9-]+\/?$/i; // /daten-met-naam/ (met of zonder trailing slash)
+const API_BASE = "https://16hl07csd16.nl";      // hardcoded ivm CSP connect-src
 const ESC = { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" };
 const e = (s) => String(s ?? "").replace(/[&<>"']/g, ch => ESC[ch]);
 
@@ -34,13 +35,9 @@ function pickImage(p, id) {
   );
 }
 
-async function fetchProfileById(id, cfg) {
-  // Geen site.config.json fetch meer (CSP/console-noise). We gebruiken defaults:
-  const base = String(cfg?.apiBase ?? "https://16hl07csd16.nl").replace(/\/+$/, "");
-  const tpl = String(cfg?.profileById ?? "/profile/id/{id}");
-  if (!base) throw new Error("no API base");
-  const ep = tpl.replace("{id}", encodeURIComponent(String(id)));
-  const url = `${base}${ep.startsWith("/") ? "" : "/"}${ep}`;
+async function fetchProfileById(id) {
+  const ep = `/profile/id/${encodeURIComponent(String(id))}`;
+  const url = `${API_BASE}${ep}`;
   const r = await fetch(url, { headers: { Accept: "application/json" } });
   if (!r.ok) throw new Error(`api ${r.status}`);
   const json = await r.json();
@@ -117,29 +114,22 @@ function enhanceExisting(p) {
 }
 
 (async function () {
-  if (!PATH_OK.test(location.pathname)) return;
+  if (!PATH_OK.test(location.pathname)) return;          // alleen profielroutes
   const id = new URLSearchParams(location.search).get("id");
-  if (!id) return;
-  const mount = document.getElementById("profile-view");
+  if (!id) return;                                      // id vereist
 
-  // Als SSG aanwezig is: alleen fetchen indien CTA of hoofdbeeld nog verbetering nodig heeft
-  if (!mount) {
-    const imgEl = document.getElementById("profile-img");
-    const ctaEl = document.getElementById("profile-cta");
-    const imgSrc = imgEl?.getAttribute("src") || "";
-    const needImage = !!imgEl && (!imgSrc || imgSrc.endsWith("/img/fallback.svg"));
-    const needCta = !!ctaEl && (!ctaEl.getAttribute("href") || ctaEl.getAttribute("href") === "#");
-    if (!needImage && !needCta) return;
-  }
+  // Als SSG al een werkende CTA heeft (http/https), niets doen.
+  const cta = document.getElementById("profile-cta");
+  const ctaHref = cta?.getAttribute?.("href") || "";
+  if (cta && /^https?:\/\//i.test(ctaHref)) return;
 
   let raw;
-  try {
-    raw = await fetchProfileById(id, { apiBase: "https://16hl07csd16.nl", profileById: "/profile/id/{id}" });
-  } catch {
-    return;
-  }
+  try { raw = await fetchProfileById(id); }
+  catch { return; } // stil falen, geen storende errors
   const prof = normalize(raw, id);
   if (!prof) return;
-  if (mount) renderFull(mount, prof);
-  else enhanceExisting(prof);
+
+  const mount = document.getElementById("profile-view");
+  if (mount) renderFull(mount, prof);   // geen SSG → volledige render
+  else enhanceExisting(prof);           // wél SSG → CTA/img bijwerken
 })();
